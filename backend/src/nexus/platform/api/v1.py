@@ -3,10 +3,12 @@
 from fastapi import APIRouter
 
 from nexus.modules.auth.router import router as auth_router
+from nexus.modules.organizations.router import router as organizations_router
 from nexus.platform.api.models import ApiInfoResponse
 
 router = APIRouter(tags=["api"])
 router.include_router(auth_router)
+router.include_router(organizations_router)
 
 
 @router.get("", response_model=ApiInfoResponse, summary="API version metadata")

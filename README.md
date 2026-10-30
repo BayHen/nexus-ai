@@ -20,7 +20,7 @@ NEXUS AI là dự án portfolio hướng tới một nền tảng SaaS quản tr
 
 | Nhóm chức năng | Trạng thái |
 |---|---|
-| Quản lý tenant, tổ chức và thành viên | PLANNED |
+| Organization, membership, invitation và active tenant context | Hoàn thành nền tảng |
 | Đăng ký, đăng nhập, refresh rotation, logout và password reset grant | Hoàn thành nền tảng |
 | RBAC theo tenant | PLANNED |
 | Danh mục khách hàng và liên hệ | PLANNED |
@@ -113,6 +113,10 @@ API dùng fail-fast startup: Uvicorn không hoàn tất startup nếu PostgreSQL
 ### Authentication
 
 Sau khi chạy migration mới nhất, các endpoint authentication nằm dưới `/api/v1/auth`. Hệ thống dùng Argon2id, JWT access token ngắn hạn, opaque refresh token rotation/revocation, login rate limiting và password-reset grant single-use. Xem [tài liệu xác thực](docs/security/authentication.md) để biết contract, biến môi trường, giới hạn rate limiter và trạng thái email delivery **PLANNED**.
+
+### Multi-tenancy
+
+Organization, membership, active organization selection, invitation cho user đã đăng ký và tenant-scoped Branch API đã được triển khai. Business API resolve tenant từ access token và active context phía server, không tin `organization_id` do client tự gửi. Xem [kiến trúc multi-tenancy](docs/architecture/multi-tenancy.md) để biết invariant database, role matrix, pagination và threat model chống cross-tenant bypass.
 
 ### Kiểm tra backend
 
@@ -211,10 +215,11 @@ Lộ trình gồm 30 Task, từ bootstrap backend, multi-tenancy, authentication
 | Task 02–06 – Agent Skills, backend và database foundation | Hoàn thành |
 | Task 07 – Frontend foundation | Hoàn thành |
 | Task 08 – Authentication system | Hoàn thành nền tảng |
-| Task 09–10 – Nền tảng bảo mật tiếp theo | PLANNED |
+| Task 09 – Multi-Tenant Organizations | Hoàn thành nền tảng |
+| Task 10 – Nền tảng bảo mật tiếp theo | PLANNED |
 | Task 11–18 – Nghiệp vụ và xử lý nền | PLANNED |
 | Task 19–23 – AI, RAG và MCP | PLANNED |
 | Task 24–26 – Frontend và E2E | PLANNED |
 | Task 27–30 – CI/CD, AWS và hoàn thiện | PLANNED |
 
-Mức hoàn thành theo chuỗi Task đã giao: **8/30 Task**.
+Mức hoàn thành theo chuỗi Task đã giao: **9/30 Task**.
