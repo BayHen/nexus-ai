@@ -10,10 +10,27 @@ from nexus.bootstrap.application import create_app
 from nexus.bootstrap.config import Settings
 
 
+class AvailableDatabaseManager:
+    """Deterministic database lifecycle test double."""
+
+    disposed = False
+
+    async def check_connection(self) -> bool:
+        return True
+
+    async def dispose(self) -> None:
+        self.disposed = True
+
+
 @pytest.fixture
 def app() -> FastAPI:
     """Create an isolated application with deterministic test settings."""
-    return create_app(Settings(environment="test", log_level="CRITICAL"))
+    settings = Settings(
+        environment="test",
+        log_level="CRITICAL",
+        database_url="postgresql+asyncpg://unused:unused@127.0.0.1:1/unused",
+    )
+    return create_app(settings, database_manager=AvailableDatabaseManager())
 
 
 @pytest.fixture

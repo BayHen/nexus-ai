@@ -23,7 +23,7 @@ async def test_readiness_endpoint_reports_dependencies(client: AsyncClient) -> N
     response = await client.get("/health/ready")
 
     assert response.status_code == 200
-    assert response.json() == {"status": "ready", "checks": {"application": "up"}}
+    assert response.json() == {"status": "ready", "checks": {"database": "up"}}
 
 
 async def test_readiness_endpoint_returns_503_when_check_fails(

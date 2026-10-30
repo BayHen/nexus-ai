@@ -7,7 +7,10 @@ from nexus.bootstrap.config import Settings
 
 
 def test_settings_use_safe_defaults() -> None:
-    settings = Settings(_env_file=None)
+    settings = Settings(
+        database_url="postgresql+asyncpg://unused:unused@localhost/unused",
+        _env_file=None,
+    )
 
     assert settings.environment == "development"
     assert settings.debug is False
@@ -16,4 +19,15 @@ def test_settings_use_safe_defaults() -> None:
 
 def test_settings_reject_invalid_api_prefix() -> None:
     with pytest.raises(ValidationError):
-        Settings(api_v1_prefix="api/v1", _env_file=None)
+        Settings(
+            api_v1_prefix="api/v1",
+            database_url="postgresql+asyncpg://unused:unused@localhost/unused",
+            _env_file=None,
+        )
+
+
+def test_database_url_is_required(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("DATABASE_URL", raising=False)
+    monkeypatch.delenv("NEXUS_DATABASE_URL", raising=False)
+    with pytest.raises(ValidationError):
+        Settings(_env_file=None)

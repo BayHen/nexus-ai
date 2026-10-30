@@ -88,6 +88,8 @@ Yêu cầu hiện tại: Python 3.12 trở lên. Từ repository root trên Wind
 python -m venv backend/.venv
 backend/.venv/Scripts/python.exe -m pip install -e "backend[dev]"
 Copy-Item .env.example .env
+docker compose --env-file .env -f infrastructure/docker/compose.yml up -d postgres
+backend/.venv/Scripts/python.exe -m alembic -c backend/alembic.ini upgrade head
 backend/.venv/Scripts/python.exe -m uvicorn nexus.main:app --host 127.0.0.1 --port 8000
 ```
 
@@ -102,6 +104,8 @@ Sau khi server khởi động:
 - OpenAPI schema: `http://127.0.0.1:8000/openapi.json`
 
 Các lệnh trên đã được kiểm chứng với Python 3.14.3 trong môi trường phát triển hiện tại. Nhấn `Ctrl+C` để dừng Uvicorn.
+
+API dùng fail-fast startup: Uvicorn không hoàn tất startup nếu PostgreSQL không reachable. Quy trình migration, transaction, backup, restore và reset volume nằm tại [tài liệu database cục bộ](docs/database/local-development.md).
 
 ### Kiểm tra backend
 
