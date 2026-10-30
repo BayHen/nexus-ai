@@ -4,7 +4,7 @@
 
 NEXUS AI là dự án portfolio hướng tới một nền tảng SaaS quản trị doanh nghiệp đa tenant, kết hợp các quy trình nghiệp vụ an toàn giao dịch với AI Agent và RAG. Dự án được thiết kế cho vị trí Backend Python Engineer và AI Backend Engineer, ưu tiên chất lượng kiến trúc, khả năng kiểm thử, bảo mật và vận hành thực tế.
 
-**Trạng thái hiện tại:** Task 01 đã hoàn thành phần khởi tạo và thiết kế kiến trúc. Toàn bộ chức năng nghiệp vụ bên dưới đang ở trạng thái **PLANNED**.
+**Trạng thái hiện tại:** Nền tảng FastAPI đã hoạt động với API versioning, typed settings, error handling, structured logging, request ID và health checks. Toàn bộ chức năng nghiệp vụ bên dưới vẫn ở trạng thái **PLANNED**.
 
 ## Mục tiêu dự án
 
@@ -82,14 +82,36 @@ Các thư mục rỗng hiện được giữ bằng `.gitkeep`; chưa có busine
 
 ## Hướng dẫn cài đặt
 
-Task 01 chưa cài dependency hoặc cung cấp môi trường chạy hoàn chỉnh. Chuẩn bị ban đầu:
+Yêu cầu hiện tại: Python 3.12 trở lên. Từ repository root trên Windows PowerShell:
 
-1. Cài Git, Python, Node.js, Docker và Docker Compose theo phiên bản sẽ được chốt ở Task 02.
-2. Sao chép `.env.example` thành `.env` và thay các giá trị mẫu bằng secret cục bộ.
-3. Không commit file `.env` hoặc credential.
-4. Tiếp tục Task 02 để bootstrap backend và khai báo dependency tối thiểu.
+```powershell
+python -m venv backend/.venv
+backend/.venv/Scripts/python.exe -m pip install -e "backend[dev]"
+Copy-Item .env.example .env
+backend/.venv/Scripts/python.exe -m uvicorn nexus.main:app --host 127.0.0.1 --port 8000
+```
 
-Hiện chưa có lệnh khởi chạy ứng dụng vì mã nguồn ứng dụng đang **PLANNED**.
+File `.env` là cấu hình cục bộ và không được commit. Các giá trị `NEXUS_*` trong `.env.example` điều khiển app name, environment, debug, log level và API prefix.
+
+Sau khi server khởi động:
+
+- API metadata: `http://127.0.0.1:8000/api/v1`
+- Liveness: `http://127.0.0.1:8000/health/live`
+- Readiness: `http://127.0.0.1:8000/health/ready`
+- Swagger UI: `http://127.0.0.1:8000/docs`
+- OpenAPI schema: `http://127.0.0.1:8000/openapi.json`
+
+Các lệnh trên đã được kiểm chứng với Python 3.14.3 trong môi trường phát triển hiện tại. Nhấn `Ctrl+C` để dừng Uvicorn.
+
+### Kiểm tra backend
+
+```powershell
+Set-Location backend
+.venv/Scripts/python.exe -m ruff format --check .
+.venv/Scripts/python.exe -m ruff check .
+.venv/Scripts/python.exe -m mypy .
+.venv/Scripts/python.exe -m pytest -q
+```
 
 ## Hướng dẫn sử dụng Codex
 
