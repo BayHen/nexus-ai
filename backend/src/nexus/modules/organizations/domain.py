@@ -19,6 +19,9 @@ class Permission(StrEnum):
     MEMBER_ROLE_MANAGE = "member:role:manage"
     MEMBER_REMOVE = "member:remove"
     AUDIT_READ = "audit:read"
+    CATALOG_READ = "catalog:read"
+    CATALOG_WRITE = "catalog:write"
+    CATALOG_DELETE = "catalog:delete"
 
 
 ROLE_PERMISSIONS: dict[MembershipRole, frozenset[Permission]] = {
@@ -33,6 +36,9 @@ ROLE_PERMISSIONS: dict[MembershipRole, frozenset[Permission]] = {
             Permission.MEMBER_ROLE_MANAGE,
             Permission.MEMBER_REMOVE,
             Permission.AUDIT_READ,
+            Permission.CATALOG_READ,
+            Permission.CATALOG_WRITE,
+            Permission.CATALOG_DELETE,
         }
     ),
     "manager": frozenset(
@@ -42,10 +48,12 @@ ROLE_PERMISSIONS: dict[MembershipRole, frozenset[Permission]] = {
             Permission.BRANCH_UPDATE,
             Permission.MEMBER_READ,
             Permission.AUDIT_READ,
+            Permission.CATALOG_READ,
+            Permission.CATALOG_WRITE,
         }
     ),
-    "staff": frozenset({Permission.BRANCH_READ, Permission.BRANCH_UPDATE}),
-    "viewer": frozenset({Permission.BRANCH_READ}),
+    "staff": frozenset({Permission.BRANCH_READ, Permission.BRANCH_UPDATE, Permission.CATALOG_READ}),
+    "viewer": frozenset({Permission.BRANCH_READ, Permission.CATALOG_READ}),
 }
 
 

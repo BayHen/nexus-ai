@@ -21,6 +21,9 @@ Client không gửi role hoặc tenant ID cho business API. `TenantContext` ch�
 | `member:role:manage` | Có | Có | Không | Không | Không |
 | `member:remove` | Có | Có | Không | Không | Không |
 | `audit:read` | Có | Có | Có | Không | Không |
+| `catalog:read` | Có | Có | Có | Có | Có |
+| `catalog:write` | Có | Có | Có | Không | Không |
+| `catalog:delete` | Có | Có | Không | Không | Không |
 
 Permission matrix là allowlist trong `ROLE_PERMISSIONS`. Role không có permission tương ứng luôn nhận `403 tenant_access_denied`.
 
