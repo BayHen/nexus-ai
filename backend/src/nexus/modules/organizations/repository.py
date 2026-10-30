@@ -12,6 +12,7 @@ from nexus.modules.organizations.models import (
     Branch,
     Membership,
     Organization,
+    OrganizationAuditEvent,
 )
 
 
@@ -34,6 +35,20 @@ class OrganizationRepository:
         if lock:
             statement = statement.with_for_update()
         return await self._session.scalar(statement)
+
+    async def active_owners_for_update(self, organization_id: UUID) -> list[Membership]:
+        """Lock active owner rows to serialize last-owner decisions."""
+        return list(
+            await self._session.scalars(
+                select(Membership)
+                .where(
+                    Membership.organization_id == organization_id,
+                    Membership.status == "active",
+                    Membership.role == "owner",
+                )
+                .with_for_update()
+            )
+        )
 
     async def active_context(
         self, user_id: UUID
@@ -124,6 +139,66 @@ class OrganizationRepository:
             select(func.count()).select_from(Branch).where(*conditions)
         )
         return rows, int(total or 0)
+
+    async def list_members(
+        self,
+        organization_id: UUID,
+        *,
+        query: str | None,
+        role: str | None,
+        status: str | None,
+        offset: int,
+        limit: int,
+    ) -> tuple[list[tuple[Membership, User]], int]:
+        conditions = [Membership.organization_id == organization_id]
+        if query:
+            conditions.append(User.email.ilike(f"%{query}%"))
+        if role:
+            conditions.append(Membership.role == role)
+        if status:
+            conditions.append(Membership.status == status)
+        base = select(Membership, User).join(User, User.id == Membership.user_id)
+        rows = (
+            await self._session.execute(
+                base.where(*conditions)
+                .order_by(User.email, Membership.user_id)
+                .offset(offset)
+                .limit(limit)
+            )
+        ).all()
+        total = await self._session.scalar(
+            select(func.count()).select_from(base.where(*conditions).subquery())
+        )
+        return [(row[0], row[1]) for row in rows], int(total or 0)
+
+    async def list_audit_events(
+        self,
+        organization_id: UUID,
+        *,
+        event_type: str | None,
+        offset: int,
+        limit: int,
+    ) -> tuple[list[OrganizationAuditEvent], int]:
+        conditions = [OrganizationAuditEvent.organization_id == organization_id]
+        if event_type:
+            conditions.append(OrganizationAuditEvent.event_type == event_type)
+        statement = select(OrganizationAuditEvent).where(*conditions)
+        rows = list(
+            await self._session.scalars(
+                statement.order_by(
+                    OrganizationAuditEvent.created_at.desc(), OrganizationAuditEvent.id.desc()
+                )
+                .offset(offset)
+                .limit(limit)
+            )
+        )
+        total = await self._session.scalar(
+            select(func.count()).select_from(OrganizationAuditEvent).where(*conditions)
+        )
+        return rows, int(total or 0)
+
+    async def delete_membership(self, membership: Membership) -> None:
+        await self._session.delete(membership)
 
     def add(self, instance: object) -> None:
         self._session.add(instance)

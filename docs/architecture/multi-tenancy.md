@@ -30,16 +30,9 @@ Client chỉ truyền organization ID ở hai identity workflow:
 
 Mọi branch query luôn có đồng thời `Branch.organization_id == context.organization_id` và `Branch.id == branch_id`. Vì vậy branch ID hợp lệ của tenant khác vẫn trả `404`; API không xác nhận tài nguyên ngoài tenant có tồn tại.
 
-## Role trong Task 09
+## Role và permission
 
-| Hành động | owner | admin | member |
-|---|---:|---:|---:|
-| Đọc branch trong active organization | Có | Có | Có |
-| Tạo/cập nhật branch | Có | Có | Không |
-| Mời member/admin | Có | Có | Không |
-| Chọn organization có membership active | Có | Có | Có |
-
-RBAC permission catalog chi tiết hơn vẫn **PLANNED**. Role checks hiện chỉ bảo vệ các workflow thuộc Task 09.
+Task 10 mở rộng role thành Owner, Admin, Manager, Staff và Viewer, đồng thời thay role `member` cũ bằng `viewer` để bảo toàn quyền đọc tối thiểu. Permission matrix, target-policy, last-owner protection và audit schema nằm tại [tài liệu RBAC](../security/rbac.md).
 
 ## API
 

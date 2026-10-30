@@ -19,7 +19,7 @@ class OrganizationResponse(BaseModel):
     id: UUID
     name: str
     slug: str
-    role: Literal["owner", "admin", "member"]
+    role: Literal["owner", "admin", "manager", "staff", "viewer"]
     created_at: datetime
 
 
@@ -34,15 +34,47 @@ class InvitationCreateRequest(BaseModel):
     email: Annotated[
         str, Field(min_length=3, max_length=320, pattern=r"^[^\s@]+@[^\s@]+\.[^\s@]+$")
     ]
-    role: Literal["admin", "member"] = "member"
+    role: Literal["admin", "manager", "staff", "viewer"] = "viewer"
 
 
 class MembershipResponse(BaseModel):
     organization_id: UUID
     user_id: UUID
-    role: Literal["owner", "admin", "member"]
+    role: Literal["owner", "admin", "manager", "staff", "viewer"]
     status: Literal["pending", "active"]
     created_at: datetime
+
+
+class MemberResponse(MembershipResponse):
+    email: str
+
+
+class MemberPageResponse(BaseModel):
+    items: list[MemberResponse]
+    page: int
+    page_size: int
+    total: int
+
+
+class MemberRoleUpdateRequest(BaseModel):
+    role: Literal["owner", "admin", "manager", "staff", "viewer"]
+
+
+class AuditEventResponse(BaseModel):
+    id: UUID
+    actor_user_id: UUID | None
+    event_type: str
+    target_type: str
+    target_id: UUID | None
+    details: dict[str, object]
+    created_at: datetime
+
+
+class AuditEventPageResponse(BaseModel):
+    items: list[AuditEventResponse]
+    page: int
+    page_size: int
+    total: int
 
 
 class BranchCreateRequest(BaseModel):

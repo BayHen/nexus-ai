@@ -3,25 +3,38 @@
 from typing import Annotated, Literal, cast
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, Query, Response, status
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from nexus.modules.auth.dependencies import get_current_user, get_transaction
 from nexus.modules.auth.domain import AuthenticatedUser
+from nexus.modules.auth.models import User
 from nexus.modules.organizations.dependencies import TenantContextDependency
 from nexus.modules.organizations.domain import (
     InvitationConflictError,
+    LastOwnerProtectionError,
+    MembershipRole,
     OrganizationNotFoundError,
     TenantAccessDeniedError,
 )
-from nexus.modules.organizations.models import Branch, Membership, Organization
+from nexus.modules.organizations.models import (
+    Branch,
+    Membership,
+    Organization,
+    OrganizationAuditEvent,
+)
 from nexus.modules.organizations.schemas import (
+    AuditEventPageResponse,
+    AuditEventResponse,
     BranchCreateRequest,
     BranchPageResponse,
     BranchResponse,
     BranchUpdateRequest,
     InvitationCreateRequest,
+    MemberPageResponse,
+    MemberResponse,
+    MemberRoleUpdateRequest,
     MembershipResponse,
     OrganizationCreateRequest,
     OrganizationPageResponse,
@@ -42,7 +55,7 @@ def organization_response(organization: Organization, role: str) -> Organization
         id=organization.id,
         name=organization.name,
         slug=organization.slug,
-        role=cast(Literal["owner", "admin", "member"], role),
+        role=cast(Literal["owner", "admin", "manager", "staff", "viewer"], role),
         created_at=organization.created_at,
     )
 
@@ -51,7 +64,7 @@ def membership_response(membership: Membership) -> MembershipResponse:
     return MembershipResponse(
         organization_id=membership.organization_id,
         user_id=membership.user_id,
-        role=cast(Literal["owner", "admin", "member"], membership.role),
+        role=cast(Literal["owner", "admin", "manager", "staff", "viewer"], membership.role),
         status=cast(Literal["pending", "active"], membership.status),
         created_at=membership.created_at,
     )
@@ -67,11 +80,36 @@ def branch_response(branch: Branch) -> BranchResponse:
     )
 
 
+def member_response(membership: Membership, user: User) -> MemberResponse:
+    base = membership_response(membership)
+    return MemberResponse(**base.model_dump(), email=user.email)
+
+
+def audit_response(event: OrganizationAuditEvent) -> AuditEventResponse:
+    return AuditEventResponse(
+        id=event.id,
+        actor_user_id=event.actor_user_id,
+        event_type=event.event_type,
+        target_type=event.target_type,
+        target_id=event.target_id,
+        details=event.details,
+        created_at=event.created_at,
+    )
+
+
 def not_found() -> ApplicationError:
     return ApplicationError(
         code="resource_not_found",
         message="The requested resource was not found.",
         status_code=status.HTTP_404_NOT_FOUND,
+    )
+
+
+def access_denied() -> ApplicationError:
+    return ApplicationError(
+        code="tenant_access_denied",
+        message="You do not have permission to perform this action.",
+        status_code=status.HTTP_403_FORBIDDEN,
     )
 
 
@@ -147,11 +185,7 @@ async def invite_member(
             context, body.email, body.role
         )
     except TenantAccessDeniedError as exc:
-        raise ApplicationError(
-            code="tenant_access_denied",
-            message="You do not have permission to perform this action.",
-            status_code=status.HTTP_403_FORBIDDEN,
-        ) from exc
+        raise access_denied() from exc
     except (InvitationConflictError, IntegrityError) as exc:
         raise ApplicationError(
             code="invitation_unavailable",
@@ -188,11 +222,7 @@ async def create_branch(
     try:
         branch = await OrganizationService(session).create_branch(context, body.name, body.slug)
     except TenantAccessDeniedError as exc:
-        raise ApplicationError(
-            code="tenant_access_denied",
-            message="You do not have permission to perform this action.",
-            status_code=status.HTTP_403_FORBIDDEN,
-        ) from exc
+        raise access_denied() from exc
     except IntegrityError as exc:
         raise ApplicationError(
             code="branch_conflict",
@@ -248,9 +278,96 @@ async def update_branch(
     except OrganizationNotFoundError as exc:
         raise not_found() from exc
     except TenantAccessDeniedError as exc:
-        raise ApplicationError(
-            code="tenant_access_denied",
-            message="You do not have permission to perform this action.",
-            status_code=status.HTTP_403_FORBIDDEN,
-        ) from exc
+        raise access_denied() from exc
     return branch_response(branch)
+
+
+@router.get("/members", response_model=MemberPageResponse)
+async def list_members(
+    session: SessionDependency,
+    context: TenantContextDependency,
+    page: PageDependency = 1,
+    page_size: PageSizeDependency = 20,
+    query: Annotated[str | None, Query(min_length=1, max_length=320)] = None,
+    role: MembershipRole | None = None,
+    membership_status: Annotated[Literal["pending", "active"] | None, Query(alias="status")] = None,
+) -> MemberPageResponse:
+    try:
+        items, total = await OrganizationService(session).list_members(
+            context, query, role, membership_status, page, page_size
+        )
+    except TenantAccessDeniedError as exc:
+        raise access_denied() from exc
+    return MemberPageResponse(
+        items=[member_response(membership, user) for membership, user in items],
+        page=page,
+        page_size=page_size,
+        total=total,
+    )
+
+
+@router.patch("/members/{user_id}/role", response_model=MembershipResponse)
+async def change_member_role(
+    user_id: UUID,
+    body: MemberRoleUpdateRequest,
+    session: SessionDependency,
+    context: TenantContextDependency,
+) -> MembershipResponse:
+    try:
+        membership = await OrganizationService(session).change_member_role(
+            context, user_id, body.role
+        )
+    except OrganizationNotFoundError as exc:
+        raise not_found() from exc
+    except TenantAccessDeniedError as exc:
+        raise access_denied() from exc
+    except LastOwnerProtectionError as exc:
+        raise ApplicationError(
+            code="last_owner_protected",
+            message="The last active organization owner cannot be changed.",
+            status_code=status.HTTP_409_CONFLICT,
+        ) from exc
+    return membership_response(membership)
+
+
+@router.delete("/members/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def remove_member(
+    user_id: UUID,
+    session: SessionDependency,
+    context: TenantContextDependency,
+) -> Response:
+    try:
+        await OrganizationService(session).remove_member(context, user_id)
+    except OrganizationNotFoundError as exc:
+        raise not_found() from exc
+    except TenantAccessDeniedError as exc:
+        raise access_denied() from exc
+    except LastOwnerProtectionError as exc:
+        raise ApplicationError(
+            code="last_owner_protected",
+            message="The last active organization owner cannot be removed.",
+            status_code=status.HTTP_409_CONFLICT,
+        ) from exc
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.get("/audit-events", response_model=AuditEventPageResponse)
+async def list_audit_events(
+    session: SessionDependency,
+    context: TenantContextDependency,
+    page: PageDependency = 1,
+    page_size: PageSizeDependency = 20,
+    event_type: Annotated[str | None, Query(min_length=1, max_length=80)] = None,
+) -> AuditEventPageResponse:
+    try:
+        items, total = await OrganizationService(session).list_audit_events(
+            context, event_type, page, page_size
+        )
+    except TenantAccessDeniedError as exc:
+        raise access_denied() from exc
+    return AuditEventPageResponse(
+        items=[audit_response(event) for event in items],
+        page=page,
+        page_size=page_size,
+        total=total,
+    )

@@ -15,6 +15,7 @@ from sqlalchemy import (
     UniqueConstraint,
     func,
 )
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -46,7 +47,10 @@ class Membership(Base):
     __tablename__ = "organization_memberships"
     __table_args__ = (
         PrimaryKeyConstraint("organization_id", "user_id"),
-        CheckConstraint("role IN ('owner', 'admin', 'member')", name="valid_role"),
+        CheckConstraint(
+            "role IN ('owner', 'admin', 'manager', 'staff', 'viewer')",
+            name="valid_role",
+        ),
         CheckConstraint("status IN ('pending', 'active')", name="valid_status"),
         Index("ix_organization_memberships_user_status", "user_id", "status"),
     )
@@ -106,6 +110,31 @@ class Branch(Base):
     name: Mapped[str] = mapped_column(String(160), nullable=False)
     slug: Mapped[str] = mapped_column(String(80), nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=func.now()
+    )
+
+
+class OrganizationAuditEvent(Base):
+    """Immutable record of a sensitive tenant-scoped authorization change."""
+
+    __tablename__ = "organization_audit_events"
+    __table_args__ = (
+        Index("ix_org_audit_events_org_created", "organization_id", "created_at"),
+        Index("ix_org_audit_events_org_type", "organization_id", "event_type"),
+    )
+
+    id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True, default=uuid4)
+    organization_id: Mapped[UUID] = mapped_column(
+        PGUUID(as_uuid=True), ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False
+    )
+    actor_user_id: Mapped[UUID | None] = mapped_column(
+        PGUUID(as_uuid=True), ForeignKey("auth_users.id", ondelete="SET NULL")
+    )
+    event_type: Mapped[str] = mapped_column(String(80), nullable=False)
+    target_type: Mapped[str] = mapped_column(String(40), nullable=False)
+    target_id: Mapped[UUID | None] = mapped_column(PGUUID(as_uuid=True))
+    details: Mapped[dict[str, object]] = mapped_column(JSONB, nullable=False, default=dict)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=func.now()
     )

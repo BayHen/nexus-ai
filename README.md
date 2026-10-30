@@ -22,7 +22,7 @@ NEXUS AI là dự án portfolio hướng tới một nền tảng SaaS quản tr
 |---|---|
 | Organization, membership, invitation và active tenant context | Hoàn thành nền tảng |
 | Đăng ký, đăng nhập, refresh rotation, logout và password reset grant | Hoàn thành nền tảng |
-| RBAC theo tenant | PLANNED |
+| RBAC theo tenant với Owner, Admin, Manager, Staff và Viewer | Hoàn thành nền tảng |
 | Danh mục khách hàng và liên hệ | PLANNED |
 | Sản phẩm, tồn kho và điều chỉnh kho | PLANNED |
 | Đơn hàng, hóa đơn và thanh toán | PLANNED |
@@ -117,6 +117,10 @@ Sau khi chạy migration mới nhất, các endpoint authentication nằm dướ
 ### Multi-tenancy
 
 Organization, membership, active organization selection, invitation cho user đã đăng ký và tenant-scoped Branch API đã được triển khai. Business API resolve tenant từ access token và active context phía server, không tin `organization_id` do client tự gửi. Xem [kiến trúc multi-tenancy](docs/architecture/multi-tenancy.md) để biết invariant database, role matrix, pagination và threat model chống cross-tenant bypass.
+
+### RBAC và audit
+
+Permission allowlist được thực thi trong service cho năm role Owner, Admin, Manager, Staff và Viewer. Role management có target-policy chống privilege escalation, active owner cuối cùng được bảo vệ bằng row lock, và sensitive membership changes tạo immutable audit event. Xem [permissions matrix và audit schema](docs/security/rbac.md).
 
 ### Kiểm tra backend
 
@@ -216,10 +220,10 @@ Lộ trình gồm 30 Task, từ bootstrap backend, multi-tenancy, authentication
 | Task 07 – Frontend foundation | Hoàn thành |
 | Task 08 – Authentication system | Hoàn thành nền tảng |
 | Task 09 – Multi-Tenant Organizations | Hoàn thành nền tảng |
-| Task 10 – Nền tảng bảo mật tiếp theo | PLANNED |
+| Task 10 – Role-Based Access Control | Hoàn thành nền tảng |
 | Task 11–18 – Nghiệp vụ và xử lý nền | PLANNED |
 | Task 19–23 – AI, RAG và MCP | PLANNED |
 | Task 24–26 – Frontend và E2E | PLANNED |
 | Task 27–30 – CI/CD, AWS và hoàn thiện | PLANNED |
 
-Mức hoàn thành theo chuỗi Task đã giao: **9/30 Task**.
+Mức hoàn thành theo chuỗi Task đã giao: **10/30 Task**.

@@ -1,10 +1,57 @@
 """Organization domain values and errors."""
 
 from dataclasses import dataclass
+from enum import StrEnum
 from typing import Literal
 from uuid import UUID
 
-MembershipRole = Literal["owner", "admin", "member"]
+MembershipRole = Literal["owner", "admin", "manager", "staff", "viewer"]
+
+
+class Permission(StrEnum):
+    """Tenant-scoped capabilities enforced by application services."""
+
+    BRANCH_READ = "branch:read"
+    BRANCH_CREATE = "branch:create"
+    BRANCH_UPDATE = "branch:update"
+    MEMBER_READ = "member:read"
+    MEMBER_INVITE = "member:invite"
+    MEMBER_ROLE_MANAGE = "member:role:manage"
+    MEMBER_REMOVE = "member:remove"
+    AUDIT_READ = "audit:read"
+
+
+ROLE_PERMISSIONS: dict[MembershipRole, frozenset[Permission]] = {
+    "owner": frozenset(Permission),
+    "admin": frozenset(
+        {
+            Permission.BRANCH_READ,
+            Permission.BRANCH_CREATE,
+            Permission.BRANCH_UPDATE,
+            Permission.MEMBER_READ,
+            Permission.MEMBER_INVITE,
+            Permission.MEMBER_ROLE_MANAGE,
+            Permission.MEMBER_REMOVE,
+            Permission.AUDIT_READ,
+        }
+    ),
+    "manager": frozenset(
+        {
+            Permission.BRANCH_READ,
+            Permission.BRANCH_CREATE,
+            Permission.BRANCH_UPDATE,
+            Permission.MEMBER_READ,
+            Permission.AUDIT_READ,
+        }
+    ),
+    "staff": frozenset({Permission.BRANCH_READ, Permission.BRANCH_UPDATE}),
+    "viewer": frozenset({Permission.BRANCH_READ}),
+}
+
+
+def has_permission(role: MembershipRole, permission: Permission) -> bool:
+    """Return whether a role grants a capability."""
+    return permission in ROLE_PERMISSIONS[role]
 
 
 class OrganizationNotFoundError(Exception):
@@ -25,6 +72,10 @@ class OrganizationConflictError(Exception):
 
 class InvitationConflictError(Exception):
     """Raised when a membership invitation cannot be created or accepted."""
+
+
+class LastOwnerProtectionError(Exception):
+    """Raised when an operation would remove the final active owner."""
 
 
 @dataclass(frozen=True)

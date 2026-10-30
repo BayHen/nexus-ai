@@ -126,7 +126,7 @@ async def test_invitation_is_pending_until_acceptance_and_supports_multiple_orgs
     invitation = await organization_client.post(
         "/api/v1/organizations/current/invitations",
         headers=auth(owner_token),
-        json={"email": "member@example.com", "role": "member"},
+        json={"email": "member@example.com", "role": "viewer"},
     )
     assert invitation.status_code == 201
     assert invitation.json()["status"] == "pending"

@@ -14,5 +14,6 @@ Tài liệu này theo dõi các quyết định cần được viết thành Arc
 | ADR-008 | LangGraph state, tool policy và human approval | PLANNED | 22 |
 | ADR-009 | MCP trust boundary | PLANNED | 23 |
 | ADR-010 | Topology triển khai AWS | PLANNED | 28 |
+| ADR-011 | Tenant RBAC allowlist, target-policy và immutable audit log | Chấp nhận | 10 |
 
 “Chấp nhận sơ bộ” nghĩa là đủ để định hướng khởi tạo nhưng vẫn có thể được tinh chỉnh bằng ADR đầy đủ khi có code và trade-off cụ thể.
