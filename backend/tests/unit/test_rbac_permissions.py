@@ -21,6 +21,11 @@ from nexus.modules.organizations.domain import MembershipRole, Permission, has_p
         ("manager", Permission.CATALOG_DELETE, False),
         ("staff", Permission.CATALOG_READ, True),
         ("staff", Permission.CATALOG_WRITE, False),
+        ("staff", Permission.INVENTORY_ADJUST, True),
+        ("viewer", Permission.INVENTORY_READ, True),
+        ("viewer", Permission.INVENTORY_ADJUST, False),
+        ("manager", Permission.INVENTORY_MANAGE, True),
+        ("manager", Permission.INVENTORY_POLICY, False),
     ],
 )
 def test_permission_matrix(role: MembershipRole, permission: Permission, *, allowed: bool) -> None:

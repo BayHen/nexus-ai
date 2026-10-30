@@ -22,6 +22,10 @@ class Permission(StrEnum):
     CATALOG_READ = "catalog:read"
     CATALOG_WRITE = "catalog:write"
     CATALOG_DELETE = "catalog:delete"
+    INVENTORY_READ = "inventory:read"
+    INVENTORY_MANAGE = "inventory:manage"
+    INVENTORY_ADJUST = "inventory:adjust"
+    INVENTORY_POLICY = "inventory:policy"
 
 
 ROLE_PERMISSIONS: dict[MembershipRole, frozenset[Permission]] = {
@@ -39,6 +43,10 @@ ROLE_PERMISSIONS: dict[MembershipRole, frozenset[Permission]] = {
             Permission.CATALOG_READ,
             Permission.CATALOG_WRITE,
             Permission.CATALOG_DELETE,
+            Permission.INVENTORY_READ,
+            Permission.INVENTORY_MANAGE,
+            Permission.INVENTORY_ADJUST,
+            Permission.INVENTORY_POLICY,
         }
     ),
     "manager": frozenset(
@@ -50,10 +58,23 @@ ROLE_PERMISSIONS: dict[MembershipRole, frozenset[Permission]] = {
             Permission.AUDIT_READ,
             Permission.CATALOG_READ,
             Permission.CATALOG_WRITE,
+            Permission.INVENTORY_READ,
+            Permission.INVENTORY_MANAGE,
+            Permission.INVENTORY_ADJUST,
         }
     ),
-    "staff": frozenset({Permission.BRANCH_READ, Permission.BRANCH_UPDATE, Permission.CATALOG_READ}),
-    "viewer": frozenset({Permission.BRANCH_READ, Permission.CATALOG_READ}),
+    "staff": frozenset(
+        {
+            Permission.BRANCH_READ,
+            Permission.BRANCH_UPDATE,
+            Permission.CATALOG_READ,
+            Permission.INVENTORY_READ,
+            Permission.INVENTORY_ADJUST,
+        }
+    ),
+    "viewer": frozenset(
+        {Permission.BRANCH_READ, Permission.CATALOG_READ, Permission.INVENTORY_READ}
+    ),
 }
 
 

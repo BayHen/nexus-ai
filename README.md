@@ -25,7 +25,7 @@ NEXUS AI là dự án portfolio hướng tới một nền tảng SaaS quản tr
 | RBAC theo tenant với Owner, Admin, Manager, Staff và Viewer | Hoàn thành nền tảng |
 | Danh mục khách hàng và liên hệ | PLANNED |
 | Product/Category catalog, generated SKU và Decimal pricing | Hoàn thành nền tảng |
-| Tồn kho và điều chỉnh kho | PLANNED |
+| Tồn kho, adjustment, transfer và immutable movement ledger | Hoàn thành nền tảng |
 | Đơn hàng, hóa đơn và thanh toán | PLANNED |
 | Workflow nền bằng Celery và RabbitMQ | PLANNED |
 | Thông báo và audit log | PLANNED |
@@ -127,6 +127,10 @@ Permission allowlist được thực thi trong service cho năm role Owner, Admi
 
 Product và Category CRUD đã hỗ trợ tenant isolation, generated SKU theo organization, `Decimal` pricing, search/filter/sort/pagination và soft deletion. Category có Product active không thể bị xóa âm thầm. Xem [kiến trúc Product Catalog](docs/architecture/product-catalog.md) để biết database constraints và quy tắc future Order price snapshot.
 
+### Inventory
+
+Stock theo Branch/Product, adjustment, atomic transfer, low-stock reporting, negative-stock policy và idempotent immutable movement ledger đã được triển khai. Mutation dùng row locking và transaction boundary để giữ consistency khi request đồng thời hoặc thất bại. Xem [kiến trúc Inventory](docs/architecture/inventory.md).
+
 ### Kiểm tra backend
 
 ```powershell
@@ -227,9 +231,10 @@ Lộ trình gồm 30 Task, từ bootstrap backend, multi-tenancy, authentication
 | Task 09 – Multi-Tenant Organizations | Hoàn thành nền tảng |
 | Task 10 – Role-Based Access Control | Hoàn thành nền tảng |
 | Task 11 – Product Catalog Management | Hoàn thành nền tảng |
-| Task 12–18 – Nghiệp vụ và xử lý nền tiếp theo | PLANNED |
+| Task 12 – Inventory Management | Hoàn thành nền tảng |
+| Task 13–18 – Nghiệp vụ và xử lý nền tiếp theo | PLANNED |
 | Task 19–23 – AI, RAG và MCP | PLANNED |
 | Task 24–26 – Frontend và E2E | PLANNED |
 | Task 27–30 – CI/CD, AWS và hoàn thiện | PLANNED |
 
-Mức hoàn thành theo chuỗi Task đã giao: **11/30 Task**.
+Mức hoàn thành theo chuỗi Task đã giao: **12/30 Task**.

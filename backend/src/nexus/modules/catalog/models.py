@@ -70,6 +70,7 @@ class Product(Base):
         CheckConstraint("price >= 0", name="non_negative_price"),
         CheckConstraint("status IN ('draft', 'active', 'archived')", name="valid_status"),
         UniqueConstraint("organization_id", "sku", name="uq_catalog_products_org_sku"),
+        UniqueConstraint("organization_id", "id", name="uq_catalog_products_org_id"),
         ForeignKeyConstraint(
             ["organization_id", "category_id"],
             ["catalog_categories.organization_id", "catalog_categories.id"],
