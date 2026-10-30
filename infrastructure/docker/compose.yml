@@ -1,6 +1,32 @@
 name: nexus-ai
 
 services:
+  frontend:
+    build:
+      context: ../../frontend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      API_BASE_URL: ${API_BASE_URL:-http://host.docker.internal:8000}
+    ports:
+      - "127.0.0.1:${FRONTEND_PORT:-3000}:3000"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3000').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 15s
+    security_opt:
+      - no-new-privileges:true
+
   postgres:
     image: postgres:17-alpine
     restart: unless-stopped

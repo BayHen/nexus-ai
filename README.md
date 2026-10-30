@@ -4,7 +4,7 @@
 
 NEXUS AI là dự án portfolio hướng tới một nền tảng SaaS quản trị doanh nghiệp đa tenant, kết hợp các quy trình nghiệp vụ an toàn giao dịch với AI Agent và RAG. Dự án được thiết kế cho vị trí Backend Python Engineer và AI Backend Engineer, ưu tiên chất lượng kiến trúc, khả năng kiểm thử, bảo mật và vận hành thực tế.
 
-**Trạng thái hiện tại:** Nền tảng FastAPI đã hoạt động với API versioning, typed settings, error handling, structured logging, request ID và health checks. Toàn bộ chức năng nghiệp vụ bên dưới vẫn ở trạng thái **PLANNED**.
+**Trạng thái hiện tại:** Nền tảng FastAPI đã hoạt động với API versioning, typed settings, error handling, structured logging, request ID và health checks. Frontend Next.js đã có dashboard shell responsive, typed API client và trạng thái loading/empty/error dùng chung. Toàn bộ chức năng nghiệp vụ bên dưới vẫn ở trạng thái **PLANNED**.
 
 ## Mục tiêu dự án
 
@@ -30,13 +30,14 @@ NEXUS AI là dự án portfolio hướng tới một nền tảng SaaS quản tr
 | Thông báo và audit log | PLANNED |
 | Kho tri thức, tìm kiếm vector và RAG | PLANNED |
 | AI Agent với LangGraph và công cụ MCP | PLANNED |
-| Dashboard quản trị bằng Next.js | PLANNED |
+| Dashboard shell và kiểm tra trạng thái hệ thống | Hoàn thành nền tảng |
+| Dashboard nghiệp vụ và dữ liệu tenant | PLANNED |
 | Triển khai AWS và quan sát hệ thống | PLANNED |
 
 ## Công nghệ sử dụng
 
 - **Backend:** Python, FastAPI, SQLAlchemy 2, Alembic, PostgreSQL, pgvector.
-- **Frontend:** Next.js, React, TypeScript.
+- **Frontend:** Next.js, React, TypeScript, Tailwind CSS.
 - **Bất đồng bộ và cache:** Celery, RabbitMQ, Redis.
 - **AI:** OpenAI API, LangGraph, RAG, MCP.
 - **Hạ tầng:** Docker, AWS, Terraform, GitHub Actions.
@@ -66,8 +67,10 @@ nexus-ai/
 │   ├── migrations/             # Alembic migrations tương lai
 │   └── tests/                  # Unit, integration, contract tests
 ├── frontend/
-│   ├── src/                    # Next.js/React source tương lai
-│   └── tests/                  # Component và E2E tests
+│   ├── src/app/                # App Router, page và Route Handler
+│   ├── src/components/         # Layout và UI state dùng chung
+│   ├── src/lib/api/            # Typed API client và error contract
+│   └── tests/                  # Unit và component tests
 ├── infrastructure/
 │   ├── docker/                 # Docker assets
 │   └── terraform/              # Hạ tầng AWS theo môi trường/module
@@ -117,6 +120,38 @@ Set-Location backend
 .venv/Scripts/python.exe -m pytest -q
 ```
 
+### Chạy frontend cục bộ
+
+Yêu cầu Node.js 24 trở lên và npm. Khởi động backend ở cổng `8000` trước, sau đó mở terminal mới tại repository root:
+
+```powershell
+Set-Location frontend
+npm ci
+$env:API_BASE_URL = "http://127.0.0.1:8000"
+npm run dev
+```
+
+Mở `http://127.0.0.1:3000`. Browser gọi Route Handler cùng origin tại `/api/backend/health`; Next.js gọi FastAPI bằng `API_BASE_URL`, vì vậy URL nội bộ của backend không được đưa vào browser bundle.
+
+Kiểm tra chất lượng và production build:
+
+```powershell
+Set-Location frontend
+npm run lint
+npm run typecheck
+npm test
+npm run build
+npm start
+```
+
+Chạy frontend bằng Docker Compose, sau khi đã tạo `.env` với các biến PostgreSQL bắt buộc:
+
+```powershell
+docker compose --env-file .env -f infrastructure/docker/compose.yml up --build frontend
+```
+
+Dashboard chỉ hiển thị trạng thái lấy từ health API thật. Khu vực chưa có dữ liệu được ghi rõ là trạng thái trống; các mục điều hướng chưa triển khai được gắn nhãn **Planned** và không dùng số liệu production giả.
+
 ## Hướng dẫn sử dụng Codex
 
 1. Mở repository tại thư mục gốc để Codex đọc được `AGENTS.md`.
@@ -149,6 +184,7 @@ Sau khi cài hoặc nâng cấp external skill, chạy validator và bắt đầ
 ## Testing và CI/CD
 
 - pytest sẽ bao phủ unit, integration và contract tests — **PLANNED**.
+- Vitest và Testing Library đã kiểm tra typed API client, responsive navigation và các UI state dùng chung.
 - Playwright sẽ kiểm tra các luồng end-to-end quan trọng — **PLANNED**.
 - GitHub Actions sẽ chạy lint, type check, test, build và security checks — **PLANNED**.
 - Docker image và Terraform plan sẽ được kiểm tra trước khi phát hành — **PLANNED**.
@@ -157,7 +193,7 @@ Riêng hệ thống Agent Skills đã có GitHub Actions workflow `Skills valida
 
 Mapping giữa phase và skill nằm tại [phase-to-skill mapping](docs/skills/phase-skill-mapping.md); audit có thể dùng [mẫu báo cáo audit Task](docs/skills/task-audit-report-template.md).
 
-Application test suite vẫn **PLANNED**; test suite hiện tại chỉ kiểm tra tooling của Agent Skills.
+Backend và frontend đã có application test suite nền tảng. Các bài kiểm thử nghiệp vụ và E2E vẫn **PLANNED**.
 
 ## Lộ trình phát triển 30 Task
 
@@ -168,10 +204,12 @@ Lộ trình gồm 30 Task, từ bootstrap backend, multi-tenancy, authentication
 | Phạm vi | Trạng thái |
 |---|---|
 | Task 01 – Khởi tạo và kiến trúc | Hoàn thành |
-| Task 02–10 – Nền tảng backend và bảo mật | PLANNED |
+| Task 02–06 – Agent Skills, backend và database foundation | Hoàn thành |
+| Task 07 – Frontend foundation | Hoàn thành |
+| Task 08–10 – Nền tảng bảo mật tiếp theo | PLANNED |
 | Task 11–18 – Nghiệp vụ và xử lý nền | PLANNED |
 | Task 19–23 – AI, RAG và MCP | PLANNED |
 | Task 24–26 – Frontend và E2E | PLANNED |
 | Task 27–30 – CI/CD, AWS và hoàn thiện | PLANNED |
 
-Mức hoàn thành theo roadmap: **1/30 Task**.
+Mức hoàn thành theo roadmap: **7/30 Task**.
