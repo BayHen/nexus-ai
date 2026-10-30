@@ -1,0 +1,55 @@
+name: Skills validation
+
+on:
+  pull_request:
+    paths:
+      - ".agents/skills/**"
+      - ".github/workflows/skills-validation.yml"
+      - "docs/skills/**"
+      - "scripts/validate_skills.py"
+      - "tests/skills/**"
+      - "AGENTS.md"
+      - "README.md"
+  push:
+    branches:
+      - main
+    paths:
+      - ".agents/skills/**"
+      - ".github/workflows/skills-validation.yml"
+      - "docs/skills/**"
+      - "scripts/validate_skills.py"
+      - "tests/skills/**"
+      - "AGENTS.md"
+      - "README.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: skills-validation-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Validate project skills
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: Compile validator and tests
+        run: python -m py_compile scripts/validate_skills.py tests/skills/test_validate_skills.py
+
+      - name: Run validator tests
+        run: python -m unittest discover -s tests/skills -p "test_*.py" -v
+
+      - name: Validate installed skills and registry
+        run: python scripts/validate_skills.py

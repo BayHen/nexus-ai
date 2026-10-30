@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import importlib.util
+import io
 import sys
 import tempfile
 import textwrap
 import unittest
+from contextlib import redirect_stderr
 from pathlib import Path
 
 
@@ -52,6 +54,51 @@ class SkillValidatorTests(unittest.TestCase):
             _, errors = validate_skills.validate_project(root)
         self.assertTrue(any("Duplicate skill name 'duplicate'" in error for error in errors))
 
+    def test_reports_missing_skill_entrypoint(self) -> None:
+        with tempfile.TemporaryDirectory(dir=REPOSITORY_ROOT) as directory:
+            root = Path(directory)
+            skills_root = root / ".agents" / "skills"
+            (skills_root / "missing-entrypoint").mkdir(parents=True)
+            registry_path = root / "docs" / "skills" / "registry.md"
+            registry_path.parent.mkdir(parents=True)
+            registry_path.write_text(
+                "| Skill | Description |\n|---|---|\n| `missing-entrypoint` | Test |\n",
+                encoding="utf-8",
+            )
+            _, errors = validate_skills.validate_project(root)
+        self.assertTrue(any("missing SKILL.md" in error for error in errors))
+
+    def test_reports_missing_required_metadata(self) -> None:
+        skill = """
+            ---
+            metadata:
+              short-description: Missing required fields
+            ---
+            # Invalid skill
+        """
+        with tempfile.TemporaryDirectory(dir=REPOSITORY_ROOT) as directory:
+            root = Path(directory)
+            self.create_repository(root, {"missing-metadata": skill}, [])
+            _, errors = validate_skills.validate_project(root)
+        self.assertTrue(any("missing required metadata 'name'" in error for error in errors))
+        self.assertTrue(
+            any("missing required metadata 'description'" in error for error in errors)
+        )
+
+    def test_reports_invalid_name_and_directory_mismatch(self) -> None:
+        skill = """
+            ---
+            name: Invalid_Name
+            description: Handle a workflow with intentionally invalid metadata naming.
+            ---
+            # Invalid name
+        """
+        with tempfile.TemporaryDirectory(dir=REPOSITORY_ROOT) as directory:
+            root = Path(directory)
+            self.create_repository(root, {"valid-directory": skill}, [])
+            _, errors = validate_skills.validate_project(root)
+        self.assertTrue(any("invalid skill name 'Invalid_Name'" in error for error in errors))
+
     def test_reports_missing_referenced_file(self) -> None:
         skill = """
             ---
@@ -80,6 +127,40 @@ class SkillValidatorTests(unittest.TestCase):
             _, errors = validate_skills.validate_project(root)
         self.assertIn("Skills missing from registry: actual-skill", errors)
         self.assertIn("Registry entries without a skill: unknown-skill", errors)
+
+    def test_reports_duplicate_registry_entries(self) -> None:
+        skill = """
+            ---
+            name: registered-skill
+            description: Handle a workflow used to test duplicate registry rows.
+            ---
+            # Registered skill
+        """
+        with tempfile.TemporaryDirectory(dir=REPOSITORY_ROOT) as directory:
+            root = Path(directory)
+            self.create_repository(
+                root,
+                {"registered-skill": skill},
+                ["registered-skill", "registered-skill"],
+            )
+            _, errors = validate_skills.validate_project(root)
+        self.assertIn("Duplicate registry entries: registered-skill", errors)
+
+    def test_cli_returns_failure_for_invalid_repository(self) -> None:
+        skill = """
+            ---
+            name: invalid-cli-skill
+            ---
+            # Missing description
+        """
+        with tempfile.TemporaryDirectory(dir=REPOSITORY_ROOT) as directory:
+            root = Path(directory)
+            self.create_repository(root, {"invalid-cli-skill": skill}, ["invalid-cli-skill"])
+            error_output = io.StringIO()
+            with redirect_stderr(error_output):
+                exit_code = validate_skills.main(["--root", str(root)])
+        self.assertEqual(1, exit_code)
+        self.assertIn("Skill validation failed", error_output.getvalue())
 
 
 if __name__ == "__main__":

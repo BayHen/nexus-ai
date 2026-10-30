@@ -127,7 +127,11 @@ Sau khi cài hoặc nâng cấp external skill, chạy validator và bắt đầ
 - GitHub Actions sẽ chạy lint, type check, test, build và security checks — **PLANNED**.
 - Docker image và Terraform plan sẽ được kiểm tra trước khi phát hành — **PLANNED**.
 
-Task 01 chỉ kiểm tra cấu trúc và nội dung tĩnh; chưa có test suite để thực thi.
+Riêng hệ thống Agent Skills đã có GitHub Actions workflow `Skills validation`. Workflow chạy automated tests và `scripts/validate_skills.py` để kiểm tra metadata, reference, duplicate name và registry consistency. Chi tiết về phạm vi bằng chứng và giới hạn của CI nằm tại [tài liệu Skills CI](docs/skills/ci-validation.md).
+
+Mapping giữa phase và skill nằm tại [phase-to-skill mapping](docs/skills/phase-skill-mapping.md); audit có thể dùng [mẫu báo cáo audit Task](docs/skills/task-audit-report-template.md).
+
+Application test suite vẫn **PLANNED**; test suite hiện tại chỉ kiểm tra tooling của Agent Skills.
 
 ## Lộ trình phát triển 30 Task
 
