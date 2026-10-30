@@ -14,6 +14,7 @@ async def test_startup_fails_when_database_is_unavailable() -> None:
         environment="test",
         log_level="CRITICAL",
         database_url="postgresql+asyncpg://invalid:invalid@127.0.0.1:1/unavailable",
+        jwt_secret_key="test-secret-key-that-is-at-least-32-characters",
         database_connect_timeout_seconds=0.1,
         _env_file=None,
     )

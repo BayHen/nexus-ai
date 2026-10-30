@@ -9,6 +9,7 @@ from nexus.bootstrap.config import Settings
 def test_settings_use_safe_defaults() -> None:
     settings = Settings(
         database_url="postgresql+asyncpg://unused:unused@localhost/unused",
+        jwt_secret_key="test-secret-key-that-is-at-least-32-characters",
         _env_file=None,
     )
 
@@ -22,6 +23,7 @@ def test_settings_reject_invalid_api_prefix() -> None:
         Settings(
             api_v1_prefix="api/v1",
             database_url="postgresql+asyncpg://unused:unused@localhost/unused",
+            jwt_secret_key="test-secret-key-that-is-at-least-32-characters",
             _env_file=None,
         )
 

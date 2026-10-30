@@ -7,7 +7,7 @@ Tài liệu này theo dõi các quyết định cần được viết thành Arc
 | ADR-001 | Sử dụng Modular Monolith thay vì microservices | Chấp nhận sơ bộ | 01 |
 | ADR-002 | Quy tắc Clean Architecture theo bounded module | Chấp nhận sơ bộ | 01 |
 | ADR-003 | Chiến lược shared schema và tenant isolation | PLANNED | 05 |
-| ADR-004 | Access/refresh token và session revocation | PLANNED | 07 |
+| ADR-004 | JWT access token ngắn hạn, opaque refresh token rotation và session revocation | Chấp nhận | 08 |
 | ADR-005 | Transactional outbox và idempotent consumer | PLANNED | 16 |
 | ADR-006 | Chiến lược cache và invalidation | PLANNED | 17 |
 | ADR-007 | Chunking, embedding và vector search | PLANNED | 20 |

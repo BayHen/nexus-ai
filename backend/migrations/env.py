@@ -12,6 +12,7 @@ from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from nexus.bootstrap.config import Settings
+from nexus.modules.auth import models as auth_models  # noqa: F401
 from nexus.platform.database.base import Base
 
 config = context.config

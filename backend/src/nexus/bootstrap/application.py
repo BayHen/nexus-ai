@@ -7,6 +7,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from nexus.bootstrap.config import Settings, get_settings
+from nexus.modules.auth.rate_limit import AuthenticationRateLimiter
 from nexus.platform.api.errors import register_exception_handlers
 from nexus.platform.api.health import router as health_router
 from nexus.platform.api.middleware import RequestContextMiddleware
@@ -55,6 +56,10 @@ def create_app(
     )
     application.state.settings = resolved_settings
     application.state.database_manager = resolved_database_manager
+    application.state.auth_rate_limiter = AuthenticationRateLimiter(
+        resolved_settings.auth_rate_limit_attempts,
+        resolved_settings.auth_rate_limit_window_seconds,
+    )
     application.add_middleware(RequestContextMiddleware)
     register_exception_handlers(application)
     application.include_router(health_router)

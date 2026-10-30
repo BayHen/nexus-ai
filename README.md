@@ -21,7 +21,7 @@ NEXUS AI là dự án portfolio hướng tới một nền tảng SaaS quản tr
 | Nhóm chức năng | Trạng thái |
 |---|---|
 | Quản lý tenant, tổ chức và thành viên | PLANNED |
-| Đăng ký, đăng nhập, refresh token và quản lý phiên | PLANNED |
+| Đăng ký, đăng nhập, refresh rotation, logout và password reset grant | Hoàn thành nền tảng |
 | RBAC theo tenant | PLANNED |
 | Danh mục khách hàng và liên hệ | PLANNED |
 | Sản phẩm, tồn kho và điều chỉnh kho | PLANNED |
@@ -110,6 +110,10 @@ Các lệnh trên đã được kiểm chứng với Python 3.14.3 trong môi tr
 
 API dùng fail-fast startup: Uvicorn không hoàn tất startup nếu PostgreSQL không reachable. Quy trình migration, transaction, backup, restore và reset volume nằm tại [tài liệu database cục bộ](docs/database/local-development.md).
 
+### Authentication
+
+Sau khi chạy migration mới nhất, các endpoint authentication nằm dưới `/api/v1/auth`. Hệ thống dùng Argon2id, JWT access token ngắn hạn, opaque refresh token rotation/revocation, login rate limiting và password-reset grant single-use. Xem [tài liệu xác thực](docs/security/authentication.md) để biết contract, biến môi trường, giới hạn rate limiter và trạng thái email delivery **PLANNED**.
+
 ### Kiểm tra backend
 
 ```powershell
@@ -183,7 +187,7 @@ Sau khi cài hoặc nâng cấp external skill, chạy validator và bắt đầ
 
 ## Testing và CI/CD
 
-- pytest sẽ bao phủ unit, integration và contract tests — **PLANNED**.
+- pytest đã bao phủ foundation unit, contract, PostgreSQL migration và authentication integration tests; coverage nghiệp vụ tiếp tục mở rộng theo từng Task.
 - Vitest và Testing Library đã kiểm tra typed API client, responsive navigation và các UI state dùng chung.
 - Playwright sẽ kiểm tra các luồng end-to-end quan trọng — **PLANNED**.
 - GitHub Actions sẽ chạy lint, type check, test, build và security checks — **PLANNED**.
@@ -197,7 +201,7 @@ Backend và frontend đã có application test suite nền tảng. Các bài ki�
 
 ## Lộ trình phát triển 30 Task
 
-Lộ trình gồm 30 Task, từ bootstrap backend, multi-tenancy, authentication và các workflow nghiệp vụ đến AI/RAG, frontend, CI/CD, AWS và hardening. Toàn bộ Task 02–30 đang **PLANNED**. Danh sách và tiêu chí đầu ra chi tiết nằm tại [lộ trình triển khai](docs/roadmap/30-tasks.md).
+Lộ trình gồm 30 Task, từ bootstrap backend, multi-tenancy, authentication và các workflow nghiệp vụ đến AI/RAG, frontend, CI/CD, AWS và hardening. Trạng thái thực thi hiện hành được ghi ở bảng bên dưới; các phạm vi chưa hoàn thành vẫn là **PLANNED**. Danh sách và tiêu chí đầu ra chi tiết nằm tại [lộ trình triển khai](docs/roadmap/30-tasks.md).
 
 ## Trạng thái hoàn thành dự án
 
@@ -206,10 +210,11 @@ Lộ trình gồm 30 Task, từ bootstrap backend, multi-tenancy, authentication
 | Task 01 – Khởi tạo và kiến trúc | Hoàn thành |
 | Task 02–06 – Agent Skills, backend và database foundation | Hoàn thành |
 | Task 07 – Frontend foundation | Hoàn thành |
-| Task 08–10 – Nền tảng bảo mật tiếp theo | PLANNED |
+| Task 08 – Authentication system | Hoàn thành nền tảng |
+| Task 09–10 – Nền tảng bảo mật tiếp theo | PLANNED |
 | Task 11–18 – Nghiệp vụ và xử lý nền | PLANNED |
 | Task 19–23 – AI, RAG và MCP | PLANNED |
 | Task 24–26 – Frontend và E2E | PLANNED |
 | Task 27–30 – CI/CD, AWS và hoàn thiện | PLANNED |
 
-Mức hoàn thành theo roadmap: **7/30 Task**.
+Mức hoàn thành theo chuỗi Task đã giao: **8/30 Task**.
