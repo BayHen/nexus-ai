@@ -62,3 +62,5 @@ Product search kiểm tra `name`, `description`, `sku`; filter hỗ trợ `categ
 - Staff/Viewer: read-only.
 
 Cross-tenant IDs trả `404`; cross-tenant `category_id` trả `422 category_unavailable`. Header hoặc query `organization_id` không thay đổi server-side tenant context.
+
+Kết quả audit concurrency, constraint, pagination và migration của Task 13 được ghi tại [báo cáo độ tin cậy Product và Inventory](../reliability/product-inventory-task13.md).

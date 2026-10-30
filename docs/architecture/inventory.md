@@ -65,3 +65,5 @@ Database trigger `inventory_movements_immutable` từ chối `UPDATE` và `DELET
 - Viewer: read-only.
 
 Cross-tenant Branch/Product/stock IDs trả `404`; query/header tenant giả mạo không thay đổi context.
+
+Kết quả audit concurrency, rollback, dataset lớn và migration của Task 13 được ghi tại [báo cáo độ tin cậy Product và Inventory](../reliability/product-inventory-task13.md).

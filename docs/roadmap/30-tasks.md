@@ -49,17 +49,17 @@ Chuẩn hóa `/api/v1`, error envelope, pagination, filtering, correlation ID, i
 
 Ghi audit event bất biến, redact dữ liệu nhạy cảm, rate limit, security headers và baseline threat model.
 
-### Task 11 – Module khách hàng — PLANNED
+### Task 11 – Product Catalog Management — HOÀN THÀNH
 
-Triển khai customer/contact aggregate, lifecycle, tìm kiếm, validation và tenant-scoped API.
+Triển khai Product/Category, SKU theo tenant, Decimal price, search/filter/pagination, soft delete và constraint database.
 
-### Task 12 – Module danh mục sản phẩm — PLANNED
+### Task 12 – Inventory Management — HOÀN THÀNH
 
-Triển khai product, category, pricing cơ bản, trạng thái và quy tắc uniqueness theo tenant.
+Triển khai stock theo Branch/Product, adjustment, transfer, low-stock threshold, policy tồn kho âm, idempotency và immutable movement ledger.
 
-### Task 13 – Module tồn kho — PLANNED
+### Task 13 – Inventory Reliability & Integration — HOÀN THÀNH
 
-Triển khai stock ledger, reservation, adjustment và optimistic concurrency cho cập nhật cạnh tranh.
+Audit Product/Inventory bằng integration test cho concurrency, rollback, tenant isolation, pagination/search, dataset lớn và migration compatibility. Xem [báo cáo Task 13](../reliability/product-inventory-task13.md).
 
 ### Task 14 – Module đơn hàng — PLANNED
 

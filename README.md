@@ -232,9 +232,10 @@ Lộ trình gồm 30 Task, từ bootstrap backend, multi-tenancy, authentication
 | Task 10 – Role-Based Access Control | Hoàn thành nền tảng |
 | Task 11 – Product Catalog Management | Hoàn thành nền tảng |
 | Task 12 – Inventory Management | Hoàn thành nền tảng |
-| Task 13–18 – Nghiệp vụ và xử lý nền tiếp theo | PLANNED |
+| Task 13 – Inventory Reliability & Integration | Hoàn thành audit và integration test |
+| Task 14–18 – Nghiệp vụ và xử lý nền tiếp theo | PLANNED |
 | Task 19–23 – AI, RAG và MCP | PLANNED |
 | Task 24–26 – Frontend và E2E | PLANNED |
 | Task 27–30 – CI/CD, AWS và hoàn thiện | PLANNED |
 
-Mức hoàn thành theo chuỗi Task đã giao: **12/30 Task**.
+Mức hoàn thành theo chuỗi Task đã giao: **13/30 Task**.
