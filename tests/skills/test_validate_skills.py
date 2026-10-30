@@ -36,7 +36,7 @@ class SkillValidatorTests(unittest.TestCase):
     def test_current_repository_is_valid(self) -> None:
         skills, errors = validate_skills.validate_project(REPOSITORY_ROOT)
         self.assertEqual([], errors)
-        self.assertEqual(13, len(skills))
+        self.assertEqual(14, len(skills))
 
     def test_reports_duplicate_metadata_names(self) -> None:
         skill = """

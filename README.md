@@ -112,6 +112,14 @@ Thư mục `.agents/skills/` là nơi chứa Agent Skills cấp dự án. Mỗi 
 
 Task 01 chỉ chuẩn bị vị trí và quy ước, chưa tạo các skill nghiệp vụ.
 
+### External Skill
+
+Dự án tích hợp có kiểm soát external skill `playwright` từ repository chính thức `openai/skills` để hỗ trợ browser-based validation. Skill được lưu trong `.agents/skills/playwright`, pin bằng full commit SHA, giữ nguyên license/notice và đã được review tĩnh trước khi cài.
+
+Quy trình không tự động chạy script hoặc cài npm dependency của external skill. Hướng dẫn audit, cài đặt tái lập, rollback và nâng cấp nằm tại [tài liệu External Skills](docs/skills/external-skills.md). Danh sách source và revision chuẩn nằm trong [Skills registry](docs/skills/registry.md).
+
+Sau khi cài hoặc nâng cấp external skill, chạy validator và bắt đầu một Codex session mới để catalog được làm mới.
+
 ## Testing và CI/CD
 
 - pytest sẽ bao phủ unit, integration và contract tests — **PLANNED**.
