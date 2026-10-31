@@ -4,7 +4,7 @@
 
 NEXUS AI là dự án portfolio hướng tới một nền tảng SaaS quản trị doanh nghiệp đa tenant, kết hợp các quy trình nghiệp vụ an toàn giao dịch với AI Agent và RAG. Dự án được thiết kế cho vị trí Backend Python Engineer và AI Backend Engineer, ưu tiên chất lượng kiến trúc, khả năng kiểm thử, bảo mật và vận hành thực tế.
 
-**Trạng thái hiện tại:** Nền tảng FastAPI, PostgreSQL, xác thực, multi-tenancy, RBAC, catalog, tồn kho, order/payment reliability, Redis cache và background processing bằng Celery/RabbitMQ đã có implementation cùng kiểm thử tương ứng. Frontend Next.js đã có dashboard shell responsive, typed API client và trạng thái loading/empty/error dùng chung. Các phạm vi chưa triển khai được đánh dấu **PLANNED**.
+**Trạng thái hiện tại:** Nền tảng FastAPI, PostgreSQL, xác thực, multi-tenancy, RBAC, catalog, tồn kho, order/payment reliability, Redis cache, background processing, analytics, RAG và AI business assistant bằng LangGraph đã có implementation cùng kiểm thử tương ứng. Frontend Next.js đã có dashboard shell responsive, typed API client và trạng thái loading/empty/error dùng chung. Các phạm vi chưa triển khai được đánh dấu **PLANNED**.
 
 ## Mục tiêu dự án
 
@@ -32,8 +32,8 @@ NEXUS AI là dự án portfolio hướng tới một nền tảng SaaS quản tr
 | Revenue và business analytics, CSV/XLSX export | Hoàn thành nền tảng |
 | Tenant-aware RAG knowledge base với pgvector | Hoàn thành nền tảng |
 | Thông báo và audit log | PLANNED |
-| Kho tri thức, tìm kiếm vector và RAG | PLANNED |
-| AI Agent với LangGraph và công cụ MCP | PLANNED |
+| AI business assistant với LangGraph và năm tool chỉ đọc | Hoàn thành nền tảng |
+| MCP integration cho AI Agent | PLANNED |
 | Dashboard shell và kiểm tra trạng thái hệ thống | Hoàn thành nền tảng |
 | Dashboard nghiệp vụ và dữ liệu tenant | PLANNED |
 | Triển khai AWS và quan sát hệ thống | PLANNED |
@@ -59,6 +59,8 @@ Tenant context phải được xác lập ở biên request/job và truyền tư
 Cache hiện áp dụng cache-aside cho API đọc chi tiết Product và Category. Hệ thống xác thực và resolve tenant trước khi truy cập Redis; key chứa `organization_id`, mutation chỉ invalidation sau khi transaction commit, và lỗi Redis tự fallback về PostgreSQL. Chi tiết chiến lược, metric và benchmark thực tế nằm tại [tài liệu Redis caching](docs/architecture/redis-caching.md).
 
 Chi tiết xem [tài liệu kiến trúc](docs/architecture/overview.md).
+
+AI business assistant cung cấp `POST /api/v1/agent/ask` với LangGraph hữu hạn, tool allowlist chỉ đọc, server-side tenant/permission checks, timeout, immutable tool audit và citation từ RAG. Agent không chạy SQL do model sinh và từ chối write intent; workflow ghi tương lai phải có authorization cùng xác nhận riêng. Xem [workflow AI Agent](docs/architecture/business-intelligence-agent.md) và [mô hình bảo mật](docs/security/business-agent-security.md).
 
 ## Cấu trúc thư mục
 
@@ -257,8 +259,9 @@ Lộ trình gồm 30 Task, từ bootstrap backend, multi-tenancy, authentication
 | Task 18 – Background Processing | Hoàn thành nền tảng |
 | Task 19 – Revenue & Business Analytics | Hoàn thành nền tảng |
 | Task 20 – RAG Knowledge Base | Hoàn thành nền tảng |
-| Task 21–23 – AI Agent, evaluation mở rộng và MCP | PLANNED |
+| Task 21 – Business Intelligence AI Agent | Hoàn thành nền tảng |
+| Task 22–23 – Evaluation mở rộng và MCP | PLANNED |
 | Task 24–26 – Frontend và E2E | PLANNED |
 | Task 27–30 – CI/CD, AWS và hoàn thiện | PLANNED |
 
-Mức hoàn thành theo chuỗi Task đã giao: **20/30 Task**.
+Mức hoàn thành theo chuỗi Task đã giao: **21/30 Task**.

@@ -62,6 +62,7 @@ class Settings(BaseSettings):
     knowledge_max_file_bytes: int = Field(default=10 * 1024 * 1024, ge=1024, le=25 * 1024 * 1024)
     knowledge_retrieval_limit: int = Field(default=5, ge=1, le=20)
     knowledge_distance_threshold: float = Field(default=0.45, gt=0, lt=2)
+    agent_tool_timeout_seconds: float = Field(default=5.0, gt=0, le=30)
 
     @model_validator(mode="after")
     def reject_default_auth_secret(self) -> "Settings":

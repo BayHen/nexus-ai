@@ -14,6 +14,7 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 from nexus.bootstrap.config import Settings
 from nexus.modules.analytics import models as analytics_models  # noqa: F401
 from nexus.modules.auth import models as auth_models  # noqa: F401
+from nexus.modules.business_agent import models as business_agent_models  # noqa: F401
 from nexus.modules.catalog import models as catalog_models  # noqa: F401
 from nexus.modules.inventory import models as inventory_models  # noqa: F401
 from nexus.modules.knowledge import models as knowledge_models  # noqa: F401

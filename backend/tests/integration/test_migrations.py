@@ -12,7 +12,7 @@ from tests.integration.conftest import psycopg_url
 
 pytestmark = pytest.mark.integration
 BACKEND_ROOT = Path(__file__).resolve().parents[2]
-HEAD_REVISION = "20261031_0012"
+HEAD_REVISION = "20261031_0013"
 
 
 def alembic_config(database_url: str) -> Config:

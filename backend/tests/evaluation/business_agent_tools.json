@@ -1,0 +1,7 @@
+[
+  {"question": "What was our revenue this month?", "expected_tool": "get_revenue_summary"},
+  {"question": "Which products sold the most?", "expected_tool": "get_top_products"},
+  {"question": "Which products are running low?", "expected_tool": "get_inventory_alerts"},
+  {"question": "Compare sales between two selected periods.", "expected_tool": "compare_sales_periods"},
+  {"question": "Summarize document: Business policy code ORANGE requires manager approval.", "expected_tool": "search_knowledge_base"}
+]

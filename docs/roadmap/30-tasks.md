@@ -89,13 +89,13 @@ Triển khai revenue recognition, refund reconciliation, order/product/branch me
 
 Triển khai document ingestion, chunking, embedding, vector schema, tenant isolation và pipeline bất đồng bộ.
 
-### Task 21 – RAG retrieval và evaluation — PLANNED
+### Task 21 – Business Intelligence AI Agent — HOÀN THÀNH NỀN TẢNG
 
-Triển khai hybrid retrieval, filtering, citation, answer generation và evaluation dataset với quality metrics.
+Triển khai LangGraph hữu hạn với năm tool phân tích/RAG chỉ đọc, typed contracts, tenant authorization, timeout, immutable invocation audit, citation và evaluation tích hợp.
 
-### Task 22 – AI Agent bằng LangGraph — PLANNED
+### Task 22 – Agent evaluation và approval mở rộng — PLANNED
 
-Thiết kế state graph, tool registry, checkpoint, budget, guardrail, human approval và audit trail.
+Mở rộng model-based evaluation, checkpoint, budget, guardrail, prompt-injection red team và human approval cho workflow ghi riêng biệt.
 
 ### Task 23 – MCP integration — PLANNED
 
