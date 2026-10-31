@@ -4,7 +4,7 @@ from decimal import Decimal
 from typing import Annotated, Literal, cast
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Query, Response, status
+from fastapi import APIRouter, Depends, Query, Request, Response, status
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -27,13 +27,25 @@ from nexus.modules.catalog.schemas import (
 )
 from nexus.modules.catalog.service import CatalogService
 from nexus.modules.organizations.dependencies import TenantContextDependency
-from nexus.modules.organizations.domain import TenantAccessDeniedError
+from nexus.modules.organizations.domain import (
+    Permission,
+    TenantAccessDeniedError,
+    has_permission,
+)
 from nexus.platform.api.errors import ApplicationError
+from nexus.platform.cache.service import CacheService, schedule_invalidation, tenant_cache_key
 
 router = APIRouter(tags=["catalog"])
 SessionDependency = Annotated[AsyncSession, Depends(get_transaction)]
 PageDependency = Annotated[int, Query(ge=1)]
 PageSizeDependency = Annotated[int, Query(ge=1, le=100)]
+
+
+def get_cache(request: Request) -> CacheService:
+    return cast(CacheService, request.app.state.cache_service)
+
+
+CacheDependency = Annotated[CacheService, Depends(get_cache)]
 
 
 def category_response(category: Category) -> CategoryResponse:
@@ -128,12 +140,30 @@ async def list_categories(
 
 @router.get("/categories/{category_id}", response_model=CategoryResponse)
 async def get_category(
-    category_id: UUID, session: SessionDependency, context: TenantContextDependency
+    category_id: UUID,
+    session: SessionDependency,
+    context: TenantContextDependency,
+    cache: CacheDependency,
+    request: Request,
 ) -> CategoryResponse:
+    if not has_permission(context.role, Permission.CATALOG_READ):
+        raise access_denied()
+    key = tenant_cache_key(context.organization_id, "category", category_id)
+    cached = await cache.get_json(key)
+    if cached is not None:
+        return CategoryResponse.model_validate(cached)
     try:
-        return category_response(await CatalogService(session).get_category(context, category_id))
+        response = category_response(
+            await CatalogService(session).get_category(context, category_id)
+        )
     except CatalogNotFoundError as exc:
         raise not_found() from exc
+    await cache.set_json(
+        key,
+        response.model_dump(mode="json"),
+        request.app.state.settings.cache_ttl_seconds,
+    )
+    return response
 
 
 @router.patch("/categories/{category_id}", response_model=CategoryResponse)
@@ -158,6 +188,9 @@ async def update_category(
         raise access_denied() from exc
     except IntegrityError as exc:
         raise conflict() from exc
+    schedule_invalidation(
+        session, tenant_cache_key(context.organization_id, "category", category_id)
+    )
     return category_response(category)
 
 
@@ -173,6 +206,9 @@ async def delete_category(
         raise access_denied() from exc
     except CategoryNotEmptyError as exc:
         raise conflict("The category cannot be deleted while it contains products.") from exc
+    schedule_invalidation(
+        session, tenant_cache_key(context.organization_id, "category", category_id)
+    )
     return Response(status_code=204)
 
 
@@ -249,12 +285,30 @@ async def list_products(
 
 @router.get("/products/{product_id}", response_model=ProductResponse)
 async def get_product(
-    product_id: UUID, session: SessionDependency, context: TenantContextDependency
+    product_id: UUID,
+    session: SessionDependency,
+    context: TenantContextDependency,
+    cache: CacheDependency,
+    request: Request,
 ) -> ProductResponse:
+    if not has_permission(context.role, Permission.CATALOG_READ):
+        raise access_denied()
+    key = tenant_cache_key(context.organization_id, "product", product_id)
+    cached = await cache.get_json(key)
+    if cached is not None:
+        return ProductResponse.model_validate(cached)
     try:
-        return product_response(await CatalogService(session).get_product(context, product_id))
+        response = product_response(
+            await CatalogService(session).get_product(context, product_id)
+        )
     except CatalogNotFoundError as exc:
         raise not_found() from exc
+    await cache.set_json(
+        key,
+        response.model_dump(mode="json"),
+        request.app.state.settings.cache_ttl_seconds,
+    )
+    return response
 
 
 @router.patch("/products/{product_id}", response_model=ProductResponse)
@@ -285,6 +339,9 @@ async def update_product(
             message="The selected category is unavailable.",
             status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
         ) from exc
+    schedule_invalidation(
+        session, tenant_cache_key(context.organization_id, "product", product_id)
+    )
     return product_response(product)
 
 
@@ -298,4 +355,7 @@ async def delete_product(
         raise not_found() from exc
     except TenantAccessDeniedError as exc:
         raise access_denied() from exc
+    schedule_invalidation(
+        session, tenant_cache_key(context.organization_id, "product", product_id)
+    )
     return Response(status_code=204)

@@ -42,6 +42,8 @@ class Settings(BaseSettings):
     payment_webhook_secret: SecretStr | None = Field(
         default=None, validation_alias="PAYMENT_WEBHOOK_SECRET", min_length=32
     )
+    redis_url: SecretStr | None = Field(default=None, validation_alias="REDIS_URL")
+    cache_ttl_seconds: int = Field(default=60, ge=1, le=3600)
 
     @model_validator(mode="after")
     def reject_default_auth_secret(self) -> "Settings":

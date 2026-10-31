@@ -73,7 +73,7 @@ Triển khai Payment provider abstraction, sandbox intent/refund state, idempote
 
 Triển khai PostgreSQL transactional outbox, leased local worker, retry/backoff, dead-letter, idempotent inbox consumer, correlation, immutable business audit và reconciliation. RabbitMQ/Celery publisher vẫn **PLANNED**. Xem [tài liệu reliability](../architecture/order-payment-reliability.md).
 
-### Task 17 – Redis cache và distributed controls — PLANNED
+### Task 17 – Redis cache và distributed controls — HOÀN THÀNH NỀN TẢNG
 
 Thiết kế cache key theo tenant, invalidation, rate limiting và distributed lock chỉ ở nơi có bằng chứng cần thiết.
 

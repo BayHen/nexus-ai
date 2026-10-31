@@ -13,6 +13,7 @@ from nexus.modules.auth.domain import AuthenticatedUser, TokenInvalidError
 from nexus.modules.auth.rate_limit import AuthenticationRateLimiter
 from nexus.modules.auth.security import decode_access_token
 from nexus.platform.api.errors import ApplicationError
+from nexus.platform.cache.service import CacheService
 from nexus.platform.database.protocols import TransactionManagerProtocol
 
 bearer_scheme = HTTPBearer(auto_error=False)
@@ -30,6 +31,10 @@ async def get_transaction(request: Request) -> AsyncIterator[AsyncSession]:
     manager = cast(TransactionManagerProtocol, request.app.state.database_manager)
     async with manager.transaction() as session:
         yield session
+        keys = set(session.info.get("cache_invalidation_keys", set()))
+    cache = cast(CacheService, request.app.state.cache_service)
+    for key in keys:
+        await cache.delete(key)
 
 
 async def get_current_user(

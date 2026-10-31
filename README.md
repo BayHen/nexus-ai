@@ -4,7 +4,7 @@
 
 NEXUS AI là dự án portfolio hướng tới một nền tảng SaaS quản trị doanh nghiệp đa tenant, kết hợp các quy trình nghiệp vụ an toàn giao dịch với AI Agent và RAG. Dự án được thiết kế cho vị trí Backend Python Engineer và AI Backend Engineer, ưu tiên chất lượng kiến trúc, khả năng kiểm thử, bảo mật và vận hành thực tế.
 
-**Trạng thái hiện tại:** Nền tảng FastAPI đã hoạt động với API versioning, typed settings, error handling, structured logging, request ID và health checks. Frontend Next.js đã có dashboard shell responsive, typed API client và trạng thái loading/empty/error dùng chung. Toàn bộ chức năng nghiệp vụ bên dưới vẫn ở trạng thái **PLANNED**.
+**Trạng thái hiện tại:** Nền tảng FastAPI, PostgreSQL, xác thực, multi-tenancy, RBAC, catalog, tồn kho, order/payment reliability và Redis cache đã có implementation cùng kiểm thử tương ứng. Frontend Next.js đã có dashboard shell responsive, typed API client và trạng thái loading/empty/error dùng chung. Các phạm vi chưa triển khai được đánh dấu **PLANNED**.
 
 ## Mục tiêu dự án
 
@@ -26,7 +26,8 @@ NEXUS AI là dự án portfolio hướng tới một nền tảng SaaS quản tr
 | Danh mục khách hàng và liên hệ | PLANNED |
 | Product/Category catalog, generated SKU và Decimal pricing | Hoàn thành nền tảng |
 | Tồn kho, adjustment, transfer và immutable movement ledger | Hoàn thành nền tảng |
-| Đơn hàng, hóa đơn và thanh toán | PLANNED |
+| Đơn hàng và sandbox payment | Hoàn thành nền tảng |
+| Redis cache tenant-aware cho Product/Category detail | Hoàn thành nền tảng |
 | Workflow nền bằng Celery và RabbitMQ | PLANNED |
 | Thông báo và audit log | PLANNED |
 | Kho tri thức, tìm kiếm vector và RAG | PLANNED |
@@ -52,6 +53,8 @@ Các dependency cụ thể chưa được cài đặt trong Task 01 và sẽ đ�
 Hệ thống sử dụng **Modular Monolith**: một đơn vị triển khai backend nhưng chia thành các module nghiệp vụ có ownership và dependency rule rõ ràng. Mỗi module sẽ tổ chức theo các lớp `domain`, `application`, `infrastructure` và `presentation`; dependency hướng vào trong. Các capability dùng chung nằm trong `platform`, còn composition root nằm trong `bootstrap`.
 
 Tenant context phải được xác lập ở biên request/job và truyền tường minh đến application/persistence. PostgreSQL là nguồn dữ liệu chuẩn; Redis không thay thế dữ liệu nghiệp vụ. Order/Payment hiện dùng PostgreSQL transactional outbox và idempotent local consumer; kết nối Celery/RabbitMQ để publish ra hệ thống ngoài vẫn **PLANNED**.
+
+Cache hiện áp dụng cache-aside cho API đọc chi tiết Product và Category. Hệ thống xác thực và resolve tenant trước khi truy cập Redis; key chứa `organization_id`, mutation chỉ invalidation sau khi transaction commit, và lỗi Redis tự fallback về PostgreSQL. Chi tiết chiến lược, metric và benchmark thực tế nằm tại [tài liệu Redis caching](docs/architecture/redis-caching.md).
 
 Chi tiết xem [tài liệu kiến trúc](docs/architecture/overview.md).
 
@@ -248,9 +251,10 @@ Lộ trình gồm 30 Task, từ bootstrap backend, multi-tenancy, authentication
 | Task 14 – Order Management System | Hoàn thành nền tảng |
 | Task 15 – Secure Payment Processing | Hoàn thành sandbox foundation |
 | Task 16 – Order and Payment Reliability | Hoàn thành nền tảng |
-| Task 17–18 – Nghiệp vụ và xử lý nền tiếp theo | PLANNED |
+| Task 17 – Redis Caching | Hoàn thành nền tảng |
+| Task 18 – Xử lý nền tiếp theo | PLANNED |
 | Task 19–23 – AI, RAG và MCP | PLANNED |
 | Task 24–26 – Frontend và E2E | PLANNED |
 | Task 27–30 – CI/CD, AWS và hoàn thiện | PLANNED |
 
-Mức hoàn thành theo chuỗi Task đã giao: **16/30 Task**.
+Mức hoàn thành theo chuỗi Task đã giao: **17/30 Task**.
