@@ -18,6 +18,7 @@ from nexus.modules.inventory import models as inventory_models  # noqa: F401
 from nexus.modules.orders import models as order_models  # noqa: F401
 from nexus.modules.organizations import models as organization_models  # noqa: F401
 from nexus.modules.payments import models as payment_models  # noqa: F401
+from nexus.platform.background import models as background_models  # noqa: F401
 from nexus.platform.database.base import Base
 from nexus.platform.reliability import models as reliability_models  # noqa: F401
 

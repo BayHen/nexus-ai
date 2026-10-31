@@ -9,6 +9,7 @@ from nexus.modules.orders.router import router as orders_router
 from nexus.modules.organizations.router import router as organizations_router
 from nexus.modules.payments.router import router as payments_router
 from nexus.platform.api.models import ApiInfoResponse
+from nexus.platform.background.router import router as background_router
 from nexus.platform.cache.router import router as cache_router
 from nexus.platform.reliability.router import router as reliability_router
 
@@ -19,6 +20,7 @@ router.include_router(inventory_router)
 router.include_router(orders_router)
 router.include_router(payments_router)
 router.include_router(reliability_router)
+router.include_router(background_router)
 router.include_router(cache_router)
 router.include_router(organizations_router)
 

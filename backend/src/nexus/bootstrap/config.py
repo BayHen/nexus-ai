@@ -44,6 +44,16 @@ class Settings(BaseSettings):
     )
     redis_url: SecretStr | None = Field(default=None, validation_alias="REDIS_URL")
     cache_ttl_seconds: int = Field(default=60, ge=1, le=3600)
+    celery_broker_url: SecretStr = Field(
+        default=SecretStr("amqp://guest:guest@127.0.0.1:5672//"),
+        validation_alias="CELERY_BROKER_URL",
+    )
+    celery_result_backend: SecretStr = Field(
+        default=SecretStr("redis://127.0.0.1:6379/1"),
+        validation_alias="CELERY_RESULT_BACKEND",
+    )
+    background_job_max_attempts: int = Field(default=5, ge=1, le=20)
+    background_job_retry_base_seconds: int = Field(default=2, ge=1, le=300)
 
     @model_validator(mode="after")
     def reject_default_auth_secret(self) -> "Settings":

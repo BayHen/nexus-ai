@@ -68,22 +68,30 @@ class OutboxProcessor:
         self._base_retry_seconds = base_retry_seconds
 
     async def claim(
-        self, worker_id: str, *, limit: int = 20, lease_seconds: int = 60
+        self,
+        worker_id: str,
+        *,
+        organization_id: UUID | None = None,
+        limit: int = 20,
+        lease_seconds: int = 60,
     ) -> list[OutboxEvent]:
         now = datetime.now(UTC)
         stale_before = now - timedelta(seconds=lease_seconds)
+        claim_filter = or_(
+            and_(OutboxEvent.status == "pending", OutboxEvent.available_at <= now),
+            and_(
+                OutboxEvent.status == "processing",
+                OutboxEvent.locked_at < stale_before,
+            ),
+        )
+        if organization_id is not None:
+            claim_filter = and_(
+                OutboxEvent.organization_id == organization_id, claim_filter
+            )
         rows = list(
             await self._session.scalars(
                 select(OutboxEvent)
-                .where(
-                    or_(
-                        and_(OutboxEvent.status == "pending", OutboxEvent.available_at <= now),
-                        and_(
-                            OutboxEvent.status == "processing",
-                            OutboxEvent.locked_at < stale_before,
-                        ),
-                    )
-                )
+                .where(claim_filter)
                 .order_by(OutboxEvent.available_at, OutboxEvent.created_at, OutboxEvent.id)
                 .limit(limit)
                 .with_for_update(skip_locked=True)

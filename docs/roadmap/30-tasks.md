@@ -77,7 +77,7 @@ Triển khai PostgreSQL transactional outbox, leased local worker, retry/backoff
 
 Thiết kế cache key theo tenant, invalidation, rate limiting và distributed lock chỉ ở nơi có bằng chứng cần thiết.
 
-### Task 18 – Notification workflow — PLANNED
+### Task 18 – Background processing với Celery và RabbitMQ — HOÀN THÀNH NỀN TẢNG
 
 Tạo notification preference, template, channel adapter, job nền và lịch sử gửi có retry an toàn.
 
