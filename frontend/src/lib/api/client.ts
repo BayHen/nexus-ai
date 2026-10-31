@@ -31,10 +31,11 @@ export const apiClient = {
     return request<T>(path, { method: "GET" });
   },
   post<T>(path: string, body?: unknown, headers?: HeadersInit): Promise<T> {
+    const isFormData = body instanceof FormData;
     return request<T>(path, {
       method: "POST",
-      body: body === undefined ? undefined : JSON.stringify(body),
-      headers: { "Content-Type": "application/json", ...headers },
+      body: body === undefined ? undefined : isFormData ? body : JSON.stringify(body),
+      headers: { ...(isFormData ? {} : { "Content-Type": "application/json" }), ...headers },
     });
   },
   patch<T>(path: string, body: unknown): Promise<T> {

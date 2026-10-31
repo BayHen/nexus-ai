@@ -101,7 +101,9 @@ Triển khai MCP server stateless với four-tool allowlist chỉ đọc, JWT/te
 
 Triển khai login/register, organization selection, role-aware responsive shell, analytics và các màn hình nghiệp vụ đọc dữ liệu thật qua typed BFF API.
 
-### Task 24 – Bootstrap frontend Next.js — PLANNED
+### Task 24 – AI Assistant & Analytics UI — HOÀN THÀNH
+
+Tích hợp AI chat, lịch sử theo organization, upload/indexing status, citations, tool status, analytics date range, revenue comparison, inventory alerts và kiểm thử component/E2E.
 
 Khởi tạo TypeScript, layout, design tokens, API client typed, authentication shell và test nền tảng.
 

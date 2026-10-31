@@ -23,6 +23,10 @@ export type Order = { id: string; status: "draft" | "confirmed" | "completed" | 
 export type Member = { organization_id: string; user_id: string; email: string; role: Role; status: "pending" | "active"; created_at: string };
 export type AnalyticsSummary = { currency: string; total_revenue: string; gross_revenue: string; refunded_amount: string; order_count: number; average_order_value: string };
 export type RevenueSeries = { currency: string; granularity: "day" | "month"; items: { period: string; revenue: string; order_count: number }[] };
+export type AgentCitation = { document_id: string; document_name: string; chunk_ordinal: number; excerpt: string; distance: number };
+export type AgentResponse = { run_id: string; status: "completed" | "unsupported" | "denied" | "failed"; selected_tool: string | null; answer: string; citations: AgentCitation[]; transitions: string[] };
+export type KnowledgeDocument = { id: string; filename: string; media_type: string; file_size: number; visibility: "organization" | "private"; status: "ready" | "failed"; chunk_count: number; embedding_model: string; created_at: string };
+export type AgentPeriod = { date_from: string; date_to: string };
 
 export function isHealthResponse(value: unknown): value is HealthResponse {
   if (!value || typeof value !== "object" || !("status" in value) || !("checks" in value)) {

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BuildingsIcon, ChartLineUpIcon, CreditCardIcon, GearIcon, HouseIcon, PackageIcon, ShoppingCartIcon, StackIcon, UsersIcon, XIcon } from "@phosphor-icons/react";
+import { BuildingsIcon, ChartLineUpIcon, ChatCircleDotsIcon, CreditCardIcon, GearIcon, HouseIcon, PackageIcon, ShoppingCartIcon, StackIcon, UsersIcon, XIcon } from "@phosphor-icons/react";
 import type { Role } from "@/lib/api/types";
 
 const items = [
@@ -13,6 +13,7 @@ const items = [
   { label: "Đơn hàng", href: "/orders", icon: ShoppingCartIcon, roles: ["owner", "admin", "manager", "staff", "viewer"] },
   { label: "Thanh toán", href: "/payments", icon: CreditCardIcon, roles: ["owner", "admin", "manager", "staff"] },
   { label: "Phân tích", href: "/analytics", icon: ChartLineUpIcon, roles: ["owner", "admin", "manager"] },
+  { label: "Trợ lý AI", href: "/assistant", icon: ChatCircleDotsIcon, roles: ["owner", "admin", "manager", "staff", "viewer"] },
   { label: "Đội ngũ", href: "/team", icon: UsersIcon, roles: ["owner", "admin", "manager"] },
   { label: "Tài khoản", href: "/settings", icon: GearIcon, roles: ["owner", "admin", "manager", "staff", "viewer"] },
 ] satisfies { label: string; href: string; icon: typeof HouseIcon; roles: Role[] }[];

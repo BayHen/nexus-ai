@@ -36,6 +36,7 @@ NEXUS AI là dự án portfolio hướng tới một nền tảng SaaS quản tr
 | MCP server với analytics tool allowlist chỉ đọc | Hoàn thành nền tảng |
 | Dashboard shell và kiểm tra trạng thái hệ thống | Hoàn thành nền tảng |
 | Enterprise Dashboard với dữ liệu tenant thật | Hoàn thành nền tảng |
+| AI Assistant và Analytics UI tenant-aware | Hoàn thành |
 | Triển khai AWS và quan sát hệ thống | PLANNED |
 
 ## Công nghệ sử dụng
@@ -196,6 +197,8 @@ Dashboard chỉ hiển thị trạng thái lấy từ health API thật. Khu v�
 
 Enterprise Dashboard hiện có login/register, chọn active organization, tổng quan analytics, Product, Inventory, Order, Team, Payment và Account routes. Các collection dùng search/filter/pagination từ FastAPI qua BFF HttpOnly-cookie; lỗi API không tự fallback sang mock. Payment list và Account update được đánh dấu chưa khả dụng vì backend chưa có contract tương ứng. Xem [kiến trúc Enterprise Dashboard](docs/architecture/enterprise-dashboard.md).
 
+AI workspace tại `/assistant` hỗ trợ hội thoại, lịch sử tạm thời theo organization, upload tài liệu, trạng thái indexing, citations và trạng thái tool execution. Analytics hỗ trợ khoảng ngày, so sánh với kỳ liền trước, biểu đồ doanh thu và cảnh báo tồn kho. Tenant và authorization luôn do backend xác định; UI không nhận API key và không render HTML do AI sinh ra. Xem [hành trình AI Assistant](docs/architecture/ai-assistant-ui.md).
+
 ## Hướng dẫn sử dụng Codex
 
 1. Mở repository tại thư mục gốc để Codex đọc được `AGENTS.md`.
@@ -266,7 +269,8 @@ Lộ trình gồm 30 Task, từ bootstrap backend, multi-tenancy, authentication
 | Task 21 – Business Intelligence AI Agent | Hoàn thành nền tảng |
 | Task 22 – MCP Integration & AI Evaluation | Hoàn thành nền tảng |
 | Task 23 – Enterprise Dashboard | Hoàn thành nền tảng |
-| Task 24–26 – Frontend workflow nâng cao và E2E | PLANNED |
+| Task 24 – AI Assistant & Analytics UI | Hoàn thành |
+| Task 25–26 – Frontend workflow nâng cao và E2E | PLANNED |
 | Task 27–30 – CI/CD, AWS và hoàn thiện | PLANNED |
 
-Mức hoàn thành theo chuỗi Task đã giao: **23/30 Task**.
+Mức hoàn thành theo chuỗi Task đã giao: **24/30 Task**.

@@ -16,6 +16,7 @@ export function OrganizationSelector() {
   async function activate(organization: Organization) {
     try {
       await apiClient.post(`/api/backend/organizations/${organization.id}/activate`);
+      sessionStorage.setItem("nexus_organization_id", organization.id);
       sessionStorage.setItem("nexus_role", organization.role);
       sessionStorage.setItem("nexus_organization_name", organization.name);
       router.push("/");
