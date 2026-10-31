@@ -1,5 +1,7 @@
 """Celery composition root and RabbitMQ queue topology."""
 
+import os
+
 from celery import Celery  # type: ignore[import-untyped]
 from kombu import Exchange, Queue  # type: ignore[import-untyped]
 
@@ -7,11 +9,20 @@ from nexus.bootstrap.config import Settings
 
 
 def create_celery_app(settings: Settings | None = None) -> Celery:
-    resolved = settings or Settings()
+    broker_url = (
+        settings.celery_broker_url.get_secret_value()
+        if settings is not None
+        else os.getenv("CELERY_BROKER_URL", "amqp://guest:guest@127.0.0.1:5672//")
+    )
+    result_backend = (
+        settings.celery_result_backend.get_secret_value()
+        if settings is not None
+        else os.getenv("CELERY_RESULT_BACKEND", "redis://127.0.0.1:6379/1")
+    )
     application = Celery(
         "nexus",
-        broker=resolved.celery_broker_url.get_secret_value(),
-        backend=resolved.celery_result_backend.get_secret_value(),
+        broker=broker_url,
+        backend=result_backend,
         include=["nexus.platform.background.tasks"],
     )
     exchange = Exchange("nexus.jobs", type="direct", durable=True)

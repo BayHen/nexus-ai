@@ -2,6 +2,7 @@
 
 from fastapi import APIRouter
 
+from nexus.modules.analytics.router import router as analytics_router
 from nexus.modules.auth.router import router as auth_router
 from nexus.modules.catalog.router import router as catalog_router
 from nexus.modules.inventory.router import router as inventory_router
@@ -15,6 +16,7 @@ from nexus.platform.reliability.router import router as reliability_router
 
 router = APIRouter(tags=["api"])
 router.include_router(auth_router)
+router.include_router(analytics_router)
 router.include_router(catalog_router)
 router.include_router(inventory_router)
 router.include_router(orders_router)

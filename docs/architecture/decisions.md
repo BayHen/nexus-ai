@@ -21,5 +21,6 @@ Tài liệu này theo dõi các quyết định cần được viết thành Arc
 | ADR-015 | Provider abstraction, HMAC webhook, tenant idempotency và immutable financial audit | Chấp nhận | 15 |
 | ADR-016 | PostgreSQL transactional outbox, leased worker, idempotent inbox và detection-only reconciliation | Chấp nhận | 16 |
 | ADR-017 | RabbitMQ vận chuyển job ID, PostgreSQL giữ durable job state và Celery worker dùng retry backoff | Chấp nhận | 18 |
+| ADR-018 | Net revenue theo successful payment trừ successful refund, ghi nhận tại payment success time | Chấp nhận | 19 |
 
 “Chấp nhận sơ bộ” nghĩa là đủ để định hướng khởi tạo nhưng vẫn có thể được tinh chỉnh bằng ADR đầy đủ khi có code và trade-off cụ thể.

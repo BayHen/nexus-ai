@@ -1,15 +1,20 @@
 """Durable, tenant-validated and idempotent background job execution."""
 
+import csv
 import logging
 from collections.abc import Awaitable, Callable
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
+from io import BytesIO, StringIO
 from typing import Final, Protocol
 from uuid import UUID, uuid5
 
+from openpyxl import Workbook  # type: ignore[import-untyped]
 from sqlalchemy import func, select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from nexus.modules.analytics.models import AnalyticsExport
+from nexus.modules.analytics.service import AnalyticsService
 from nexus.modules.catalog.models import Product
 from nexus.modules.inventory.models import StockLevel
 from nexus.modules.orders.models import Order
@@ -28,8 +33,9 @@ REPORT_JOB: Final = "generate_business_report"
 NOTIFICATION_JOB: Final = "send_notification_email"
 LOW_STOCK_JOB: Final = "process_low_stock_alerts"
 OUTBOX_JOB: Final = "process_transactional_outbox"
+ANALYTICS_EXPORT_JOB: Final = "export_business_analytics"
 SUPPORTED_JOBS: Final = frozenset(
-    {REPORT_JOB, NOTIFICATION_JOB, LOW_STOCK_JOB, OUTBOX_JOB}
+    {REPORT_JOB, NOTIFICATION_JOB, LOW_STOCK_JOB, OUTBOX_JOB, ANALYTICS_EXPORT_JOB}
 )
 
 
@@ -133,6 +139,7 @@ class JobExecutor:
             NOTIFICATION_JOB: self._send_notification,
             LOW_STOCK_JOB: self._process_low_stock,
             OUTBOX_JOB: self._process_outbox,
+            ANALYTICS_EXPORT_JOB: self._export_analytics,
         }
 
     async def execute(self, job_id: UUID) -> BackgroundJob:
@@ -285,6 +292,100 @@ class JobExecutor:
             if await processor.consume(event.id, worker_id=worker_id):
                 processed += 1
         return {"claimed": len(events), "processed": processed}
+
+    async def _export_analytics(self, job: BackgroundJob) -> dict[str, object]:
+        file_format = job.payload.get("file_format")
+        currency = job.payload.get("currency", "USD")
+        if file_format not in {"csv", "xlsx"} or not isinstance(currency, str):
+            raise PermanentJobError("invalid_analytics_export")
+        try:
+            date_from = (
+                date.fromisoformat(str(job.payload["date_from"]))
+                if job.payload.get("date_from")
+                else None
+            )
+            date_to = (
+                date.fromisoformat(str(job.payload["date_to"]))
+                if job.payload.get("date_to")
+                else None
+            )
+        except ValueError as exc:
+            raise PermanentJobError("invalid_analytics_export_date") from exc
+        analytics = AnalyticsService(self._session)
+        summary = await analytics.summary(
+            job.organization_id, currency, date_from, date_to
+        )
+        series = await analytics.revenue_series(
+            job.organization_id, currency, date_from, date_to, "day"
+        )
+        if file_format == "csv":
+            content = self._analytics_csv(summary, series)
+            content_type = "text/csv; charset=utf-8"
+        else:
+            content = self._analytics_xlsx(summary, series)
+            content_type = (
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            )
+        filename = f"analytics-{job.id}.{file_format}"
+        self._session.add(
+            AnalyticsExport(
+                organization_id=job.organization_id,
+                job_id=job.id,
+                file_format=file_format,
+                filename=filename,
+                content_type=content_type,
+                content=content,
+            )
+        )
+        return {"filename": filename, "content_type": content_type, "size": len(content)}
+
+    @staticmethod
+    def _analytics_csv(
+        summary: dict[str, object], series: list[dict[str, object]]
+    ) -> bytes:
+        output = StringIO(newline="")
+        writer = csv.writer(output)
+        writer.writerow(["metric", "value"])
+        for key in (
+            "currency",
+            "total_revenue",
+            "gross_revenue",
+            "refunded_amount",
+            "order_count",
+            "average_order_value",
+        ):
+            writer.writerow([key, summary[key]])
+        writer.writerow([])
+        writer.writerow(["period", "revenue", "order_count"])
+        for item in series:
+            writer.writerow([item["period"], item["revenue"], item["order_count"]])
+        return output.getvalue().encode("utf-8-sig")
+
+    @staticmethod
+    def _analytics_xlsx(
+        summary: dict[str, object], series: list[dict[str, object]]
+    ) -> bytes:
+        workbook = Workbook(write_only=True)
+        summary_sheet = workbook.create_sheet("Summary")
+        summary_sheet.append(["Metric", "Value"])
+        for key in (
+            "currency",
+            "total_revenue",
+            "gross_revenue",
+            "refunded_amount",
+            "order_count",
+            "average_order_value",
+        ):
+            summary_sheet.append([key, str(summary[key])])
+        revenue_sheet = workbook.create_sheet("Revenue by day")
+        revenue_sheet.append(["Period", "Revenue", "Order count"])
+        for item in series:
+            revenue_sheet.append(
+                [str(item["period"]), str(item["revenue"]), item["order_count"]]
+            )
+        output = BytesIO()
+        workbook.save(output)
+        return output.getvalue()
 
     @staticmethod
     def _log_context(job: BackgroundJob, event: str) -> dict[str, object]:

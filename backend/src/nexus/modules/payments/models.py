@@ -40,6 +40,14 @@ class PaymentIntent(Base):
             ondelete="RESTRICT",
         ),
         Index("ix_payment_intents_org_status_created", "organization_id", "status", "created_at"),
+        Index(
+            "ix_payment_intents_analytics",
+            "organization_id",
+            "currency",
+            "status",
+            "succeeded_at",
+            "order_id",
+        ),
     )
 
     id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True, default=uuid4)
@@ -77,6 +85,12 @@ class PaymentRefund(Base):
             ["payment_intents.organization_id", "payment_intents.id"],
             name="fk_payment_refund_org_payment",
             ondelete="RESTRICT",
+        ),
+        Index(
+            "ix_payment_refunds_org_status_payment",
+            "organization_id",
+            "status",
+            "payment_id",
         ),
     )
 

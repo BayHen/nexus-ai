@@ -81,9 +81,9 @@ Thiết kế cache key theo tenant, invalidation, rate limiting và distributed 
 
 Tạo notification preference, template, channel adapter, job nền và lịch sử gửi có retry an toàn.
 
-### Task 19 – AI platform foundation — PLANNED
+### Task 19 – Revenue & Business Analytics — HOÀN THÀNH NỀN TẢNG
 
-Tạo OpenAI client abstraction, model configuration, structured output, timeout/retry, token accounting và safety hooks.
+Triển khai revenue recognition, refund reconciliation, order/product/branch metrics, inventory valuation và CSV/XLSX export bất đồng bộ.
 
 ### Task 20 – Knowledge ingestion và pgvector — PLANNED
 

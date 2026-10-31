@@ -88,6 +88,7 @@ class OrderItem(Base):
             ondelete="RESTRICT",
         ),
         Index("ix_order_items_org_order", "organization_id", "order_id"),
+        Index("ix_order_items_org_branch_order", "organization_id", "branch_id", "order_id"),
     )
 
     id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), default=uuid4)
