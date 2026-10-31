@@ -33,3 +33,13 @@ def test_database_url_is_required(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.delenv("NEXUS_DATABASE_URL", raising=False)
     with pytest.raises(ValidationError):
         Settings(_env_file=None)
+
+
+def test_production_rejects_placeholder_secrets() -> None:
+    with pytest.raises(ValidationError):
+        Settings(
+            environment="production",
+            database_url="postgresql+asyncpg://unused:unused@localhost/unused",
+            jwt_secret_key="replace-with-a-long-random-value",
+            _env_file=None,
+        )

@@ -67,9 +67,9 @@ def create_app(
         title=resolved_settings.app_name,
         version=resolved_settings.app_version,
         debug=resolved_settings.debug,
-        docs_url="/docs",
-        redoc_url="/redoc",
-        openapi_url="/openapi.json",
+        docs_url=None if resolved_settings.environment == "production" else "/docs",
+        redoc_url=None if resolved_settings.environment == "production" else "/redoc",
+        openapi_url=None if resolved_settings.environment == "production" else "/openapi.json",
         lifespan=lifespan,
     )
     application.state.settings = resolved_settings

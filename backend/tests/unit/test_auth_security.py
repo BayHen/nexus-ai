@@ -80,3 +80,12 @@ async def test_authentication_rate_limiter_blocks_and_resets() -> None:
     assert await limiter.allow("client:user") is False
     await limiter.reset("client:user")
     assert await limiter.allow("client:user") is True
+
+
+@pytest.mark.anyio
+async def test_authentication_rate_limiter_bounds_unique_keys() -> None:
+    limiter = AuthenticationRateLimiter(attempts=2, window_seconds=60, max_keys=2)
+    assert await limiter.allow("client:first") is True
+    assert await limiter.allow("client:second") is True
+    assert await limiter.allow("client:third") is False
+    assert len(limiter._events) == 2

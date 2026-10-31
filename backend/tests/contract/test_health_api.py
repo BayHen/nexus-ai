@@ -4,8 +4,11 @@ from collections.abc import Sequence
 
 import pytest
 from fastapi import FastAPI
-from httpx import AsyncClient
+from httpx import ASGITransport, AsyncClient
+from tests.conftest import AvailableDatabaseManager
 
+from nexus.bootstrap.application import create_app
+from nexus.bootstrap.config import Settings
 from nexus.platform.api.dependencies import ReadinessCheck, get_readiness_checks
 
 pytestmark = pytest.mark.anyio
@@ -60,3 +63,20 @@ async def test_openapi_and_documentation_are_available(client: AsyncClient) -> N
     assert "/api/v1" in openapi_response.json()["paths"]
     assert "/health/live" in openapi_response.json()["paths"]
     assert docs_response.status_code == 200
+
+
+async def test_production_disables_interactive_api_documentation() -> None:
+    settings = Settings(
+        environment="production",
+        log_level="CRITICAL",
+        database_url="postgresql+asyncpg://unused:unused@127.0.0.1:1/unused",
+        jwt_secret_key="production-secret-key-that-is-at-least-32-characters",
+        _env_file=None,
+    )
+    production_app = create_app(settings, database_manager=AvailableDatabaseManager())
+    async with AsyncClient(
+        transport=ASGITransport(app=production_app),
+        base_url="http://test",
+    ) as production_client:
+        assert (await production_client.get("/docs")).status_code == 404
+        assert (await production_client.get("/openapi.json")).status_code == 404

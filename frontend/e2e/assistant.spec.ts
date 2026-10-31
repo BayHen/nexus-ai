@@ -9,7 +9,8 @@ test.beforeEach(async ({ page }) => {
 });
 
 test("asks the tenant-scoped assistant and shows evidence", async ({ page }) => {
-  await page.goto("/assistant");
+  const initialResponse = await page.goto("/assistant");
+  expect(initialResponse?.headers()["content-security-policy"]).toContain("frame-ancestors 'none'");
   await page.evaluate(() => {
     sessionStorage.setItem("nexus_role", "owner");
     sessionStorage.setItem("nexus_organization_id", "org-1");

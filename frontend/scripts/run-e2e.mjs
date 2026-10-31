@@ -12,10 +12,12 @@ async function ready() {
 let exitCode = 1;
 try {
   await ready();
-  const command = process.platform === "win32" ? "npx.cmd" : "npx";
-  const tests = spawn(command, ["playwright", "test"], { stdio: "inherit", env: { ...process.env, PW_EXTERNAL_SERVER: "1" } });
+  const command = process.platform === "win32" ? (process.env.ComSpec ?? "cmd.exe") : "npx";
+  const args = process.platform === "win32" ? ["/d", "/s", "/c", "npx.cmd playwright test"] : ["playwright", "test"];
+  const tests = spawn(command, args, { stdio: "inherit", env: { ...process.env, PW_EXTERNAL_SERVER: "1" } });
   exitCode = await new Promise((resolve) => tests.once("exit", (code) => resolve(code ?? 1)));
 } finally {
   server.kill("SIGTERM");
+  if (server.exitCode === null) await new Promise((resolve) => server.once("exit", resolve));
 }
-process.exit(exitCode);
+process.exitCode = exitCode;

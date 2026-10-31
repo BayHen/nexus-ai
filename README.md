@@ -37,6 +37,7 @@ NEXUS AI là dự án portfolio hướng tới một nền tảng SaaS quản tr
 | Dashboard shell và kiểm tra trạng thái hệ thống | Hoàn thành nền tảng |
 | Enterprise Dashboard với dữ liệu tenant thật | Hoàn thành nền tảng |
 | AI Assistant và Analytics UI tenant-aware | Hoàn thành |
+| Security Engineering Audit | Hoàn thành; còn remediation được ghi nhận |
 | Triển khai AWS và quan sát hệ thống | PLANNED |
 
 ## Công nghệ sử dụng
@@ -270,7 +271,10 @@ Lộ trình gồm 30 Task, từ bootstrap backend, multi-tenancy, authentication
 | Task 22 – MCP Integration & AI Evaluation | Hoàn thành nền tảng |
 | Task 23 – Enterprise Dashboard | Hoàn thành nền tảng |
 | Task 24 – AI Assistant & Analytics UI | Hoàn thành |
-| Task 25–26 – Frontend workflow nâng cao và E2E | PLANNED |
+| Task 25 – Security Engineering Audit | Hoàn thành |
+| Task 26 – Frontend workflow nâng cao và E2E | PLANNED |
 | Task 27–30 – CI/CD, AWS và hoàn thiện | PLANNED |
 
-Mức hoàn thành theo chuỗi Task đã giao: **24/30 Task**.
+Mức hoàn thành theo chuỗi Task đã giao: **25/30 Task**.
+
+Kết quả audit, threat model và các rủi ro chưa xử lý được ghi tại [tài liệu security](docs/security/remediation-report.md). Trạng thái hoàn thành Task 25 không có nghĩa ứng dụng hoàn toàn an toàn.

@@ -56,10 +56,22 @@ def token_response(pair: TokenPair) -> TokenResponse:
     "/register", response_model=AuthenticationResponse, status_code=status.HTTP_201_CREATED
 )
 async def register(
+    request: Request,
     body: CredentialsRequest,
     session: SessionDependency,
     settings: SettingsDependency,
+    limiter: LimiterDependency,
 ) -> AuthenticationResponse:
+    key = (
+        f"register:{request.client.host if request.client else 'unknown'}:"
+        f"{normalize_email(body.email)}"
+    )
+    if not await limiter.allow(key):
+        raise ApplicationError(
+            code="registration_rate_limited",
+            message="Unable to complete registration.",
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+        )
     try:
         user, pair = await AuthService(session, settings).register(body.email, body.password)
     except (EmailAlreadyRegisteredError, IntegrityError) as exc:

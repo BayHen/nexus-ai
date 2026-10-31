@@ -107,7 +107,9 @@ Tích hợp AI chat, lịch sử theo organization, upload/indexing status, cita
 
 Khởi tạo TypeScript, layout, design tokens, API client typed, authentication shell và test nền tảng.
 
-### Task 25 – Dashboard và màn hình nghiệp vụ — PLANNED
+### Task 25 – Security Engineering Audit — HOÀN THÀNH
+
+Threat model, checklist, remediation report và các sửa lỗi ưu tiên cao cho CSRF, auth rate limiting, limiter memory bound, production API docs và browser security headers.
 
 Triển khai dashboard, tenant switcher và UI cho các module đã có, với loading/error/accessibility states.
 

@@ -1,12 +1,19 @@
 import { cookies } from "next/headers";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
+import { isTrustedBrowserMutation } from "@/lib/api/csrf";
 
 const ACCESS_COOKIE = "nexus_access_token";
 const REFRESH_COOKIE = "nexus_refresh_token";
 type RouteContext = { params: Promise<{ path: string[] }> };
 
 async function proxy(request: NextRequest, context: RouteContext): Promise<NextResponse> {
+  if (!isTrustedBrowserMutation(request)) {
+    return NextResponse.json(
+      { error: { code: "csrf_validation_failed", message: "The request origin is not allowed." } },
+      { status: 403 },
+    );
+  }
   const { path } = await context.params;
   const backendUrl = new URL(`/api/v1/${path.join("/")}`, process.env.API_BASE_URL ?? "http://127.0.0.1:8000");
   backendUrl.search = request.nextUrl.search;
