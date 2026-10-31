@@ -17,5 +17,6 @@ Tài liệu này theo dõi các quyết định cần được viết thành Arc
 | ADR-011 | Tenant RBAC allowlist, target-policy và immutable audit log | Chấp nhận | 10 |
 | ADR-012 | Decimal catalog price, transactional tenant SKU và future order price snapshot | Chấp nhận | 11 |
 | ADR-013 | Pessimistic stock locking, idempotent movements và server-side negative policy | Chấp nhận | 12 |
+| ADR-014 | Deduct stock khi confirm, hoàn stock khi cancel và immutable Order price snapshot | Chấp nhận | 14 |
 
 “Chấp nhận sơ bộ” nghĩa là đủ để định hướng khởi tạo nhưng vẫn có thể được tinh chỉnh bằng ADR đầy đủ khi có code và trade-off cụ thể.

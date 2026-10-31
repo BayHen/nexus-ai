@@ -131,6 +131,10 @@ Product và Category CRUD đã hỗ trợ tenant isolation, generated SKU theo o
 
 Stock theo Branch/Product, adjustment, atomic transfer, low-stock reporting, negative-stock policy và idempotent immutable movement ledger đã được triển khai. Mutation dùng row locking và transaction boundary để giữ consistency khi request đồng thời hoặc thất bại. Xem [kiến trúc Inventory](docs/architecture/inventory.md).
 
+### Order Management
+
+Draft Order, item mutations, server-calculated total, immutable Product price snapshot, confirmation và cancellation đã được triển khai. Confirmation trừ Inventory bằng pessimistic locking trong cùng transaction; cancellation của Order confirmed hoàn stock và ghi movement audit. Xem [state machine và chính sách Inventory](docs/architecture/orders.md).
+
 ### Kiểm tra backend
 
 ```powershell
@@ -233,9 +237,10 @@ Lộ trình gồm 30 Task, từ bootstrap backend, multi-tenancy, authentication
 | Task 11 – Product Catalog Management | Hoàn thành nền tảng |
 | Task 12 – Inventory Management | Hoàn thành nền tảng |
 | Task 13 – Inventory Reliability & Integration | Hoàn thành audit và integration test |
-| Task 14–18 – Nghiệp vụ và xử lý nền tiếp theo | PLANNED |
+| Task 14 – Order Management System | Hoàn thành nền tảng |
+| Task 15–18 – Nghiệp vụ và xử lý nền tiếp theo | PLANNED |
 | Task 19–23 – AI, RAG và MCP | PLANNED |
 | Task 24–26 – Frontend và E2E | PLANNED |
 | Task 27–30 – CI/CD, AWS và hoàn thiện | PLANNED |
 
-Mức hoàn thành theo chuỗi Task đã giao: **13/30 Task**.
+Mức hoàn thành theo chuỗi Task đã giao: **14/30 Task**.

@@ -61,9 +61,9 @@ Triển khai stock theo Branch/Product, adjustment, transfer, low-stock threshol
 
 Audit Product/Inventory bằng integration test cho concurrency, rollback, tenant isolation, pagination/search, dataset lớn và migration compatibility. Xem [báo cáo Task 13](../reliability/product-inventory-task13.md).
 
-### Task 14 – Module đơn hàng — PLANNED
+### Task 14 – Order Management System — HOÀN THÀNH
 
-Triển khai order aggregate, line item, state transition, pricing snapshot và transaction-safe workflow.
+Triển khai draft Order, item mutations, state transition, immutable pricing snapshot, server-side totals và transaction-safe Inventory deduction/restoration. Xem [kiến trúc Order Management](../architecture/orders.md).
 
 ### Task 15 – Hóa đơn và thanh toán — PLANNED
 
