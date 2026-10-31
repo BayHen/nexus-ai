@@ -27,6 +27,8 @@ from nexus.modules.payments.models import (
 )
 from nexus.modules.payments.repository import PaymentRepository
 from nexus.modules.payments.schemas import WebhookEvent
+from nexus.platform.api.request_context import get_request_id
+from nexus.platform.reliability.service import OutboxWriter
 
 
 class PaymentService:
@@ -34,6 +36,7 @@ class PaymentService:
         self._session = session
         self._provider = provider
         self._repository = PaymentRepository(session)
+        self._outbox = OutboxWriter(session, get_request_id())
 
     async def create_intent(
         self,
@@ -76,6 +79,15 @@ class PaymentService:
         self._repository.add(payment)
         await self._session.flush()
         self._audit(payment, "payment_intent_created", None, payment.status, context.user_id)
+        self._emit(
+            payment,
+            "payment.intent.created",
+            {
+                "order_id": str(payment.order_id),
+                "amount": str(payment.amount),
+                "currency": currency,
+            },
+        )
         await self._session.flush()
         return payment, False
 
@@ -145,6 +157,11 @@ class PaymentService:
             payment.status,
             payment.status,
             context.user_id,
+            {"refund_id": str(refund.id), "amount": str(amount)},
+        )
+        self._emit(
+            payment,
+            "payment.refund.created",
             {"refund_id": str(refund.id), "amount": str(amount)},
         )
         await self._session.flush()
@@ -234,11 +251,24 @@ class PaymentService:
             order.status = "completed"
             order.updated_at = transitioned_at
             self._audit(payment, event_type, previous, payment.status, None)
+            self._emit(payment, "payment.succeeded", {"order_id": str(order.id)})
+            self._outbox.append(
+                organization_id=payment.organization_id,
+                aggregate_type="order",
+                aggregate_id=order.id,
+                event_type="order.completed",
+                payload={"payment_id": str(payment.id)},
+            )
         elif event_type == "payment.failed" and payment.status in {"pending", "failed"}:
             payment.status = "failed"
             payment.failure_code = "sandbox_declined"
             payment.updated_at = datetime.now(UTC)
             self._audit(payment, event_type, previous, payment.status, None)
+            self._emit(
+                payment,
+                "payment.failed",
+                {"failure_code": payment.failure_code or "unknown"},
+            )
         else:
             self._audit(payment, f"{event_type}.ignored", previous, payment.status, None)
 
@@ -268,6 +298,11 @@ class PaymentService:
                 None,
                 {"refund_id": str(refund.id), "refund_status": refund.status},
             )
+            self._emit(
+                payment,
+                "payment.refund.succeeded",
+                {"refund_id": str(refund.id), "amount": str(refund.amount)},
+            )
         elif event_type == "refund.failed" and refund.status in {"pending", "failed"}:
             refund.status = "failed"
             refund.failure_code = "sandbox_refund_failed"
@@ -279,6 +314,11 @@ class PaymentService:
                 payment.status,
                 None,
                 {"refund_id": str(refund.id), "previous_refund_status": previous},
+            )
+            self._emit(
+                payment,
+                "payment.refund.failed",
+                {"refund_id": str(refund.id), "failure_code": refund.failure_code or "unknown"},
             )
         else:
             self._audit(
@@ -328,6 +368,15 @@ class PaymentService:
                 actor_user_id=actor_user_id,
                 details=details or {},
             )
+        )
+
+    def _emit(self, payment: PaymentIntent, event_type: str, payload: dict[str, object]) -> None:
+        self._outbox.append(
+            organization_id=payment.organization_id,
+            aggregate_type="payment",
+            aggregate_id=payment.id,
+            event_type=event_type,
+            payload=payload,
         )
 
     @staticmethod

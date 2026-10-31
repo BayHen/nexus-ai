@@ -20,6 +20,8 @@ from nexus.modules.organizations.domain import (
     TenantContext,
     has_permission,
 )
+from nexus.platform.api.request_context import get_request_id
+from nexus.platform.reliability.service import OutboxWriter
 
 
 class OrderService:
@@ -28,6 +30,7 @@ class OrderService:
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
         self._repository = OrderRepository(session)
+        self._outbox = OutboxWriter(session, get_request_id())
 
     async def create(self, context: TenantContext) -> tuple[Order, list[OrderItem]]:
         self._authorize(context, Permission.ORDER_WRITE)
@@ -172,6 +175,13 @@ class OrderService:
         order.status = "confirmed"
         order.confirmed_at = transitioned_at
         order.updated_at = transitioned_at
+        self._outbox.append(
+            organization_id=context.organization_id,
+            aggregate_type="order",
+            aggregate_id=order.id,
+            event_type="order.confirmed",
+            payload={"total_amount": str(order.total_amount)},
+        )
         await self._session.flush()
         return order, items
 
@@ -180,6 +190,7 @@ class OrderService:
         order = await self._required_order(context.organization_id, order_id, lock=True)
         if order.status not in {"draft", "confirmed"}:
             raise OrderConflictError
+        previous_status = order.status
         items = await self._repository.items(context.organization_id, order.id)
         if order.status == "confirmed":
             stocks = await self._repository.stocks_for_update(context.organization_id, items)
@@ -208,6 +219,13 @@ class OrderService:
         order.status = "cancelled"
         order.cancelled_at = transitioned_at
         order.updated_at = transitioned_at
+        self._outbox.append(
+            organization_id=context.organization_id,
+            aggregate_type="order",
+            aggregate_id=order.id,
+            event_type="order.cancelled",
+            payload={"previous_status": previous_status},
+        )
         await self._session.flush()
         return order, items
 

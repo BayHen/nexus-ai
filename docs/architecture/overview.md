@@ -57,7 +57,7 @@ Nguyên tắc bắt buộc:
 
 Một application use case sở hữu một transaction boundary. Domain rule được kiểm tra trước khi commit; lỗi phải rollback toàn bộ thay đổi liên quan. Không thực hiện lời gọi mạng không kiểm soát bên trong database transaction.
 
-Khi workflow cần gửi event hoặc chạy job sau commit, dự án dự kiến dùng transactional outbox và consumer có tính idempotent. Redis chỉ phục vụ cache, rate limit hoặc dữ liệu tạm; PostgreSQL vẫn là nguồn dữ liệu chuẩn.
+Order/Payment workflow đã dùng PostgreSQL transactional outbox và idempotent local consumer để không mất event sau commit. Adapter publish qua Celery/RabbitMQ vẫn **PLANNED**. Redis chỉ phục vụ cache, rate limit hoặc dữ liệu tạm; PostgreSQL vẫn là nguồn dữ liệu chuẩn.
 
 ### 2.5 Xác thực và RBAC
 

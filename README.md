@@ -51,7 +51,7 @@ Các dependency cụ thể chưa được cài đặt trong Task 01 và sẽ đ�
 
 Hệ thống sử dụng **Modular Monolith**: một đơn vị triển khai backend nhưng chia thành các module nghiệp vụ có ownership và dependency rule rõ ràng. Mỗi module sẽ tổ chức theo các lớp `domain`, `application`, `infrastructure` và `presentation`; dependency hướng vào trong. Các capability dùng chung nằm trong `platform`, còn composition root nằm trong `bootstrap`.
 
-Tenant context phải được xác lập ở biên request/job và truyền tường minh đến application/persistence. PostgreSQL là nguồn dữ liệu chuẩn; Redis không thay thế dữ liệu nghiệp vụ. Celery xử lý tác vụ nền, còn các side effect liên hệ hệ thống ngoài sẽ dùng cơ chế tin cậy như transactional outbox khi được triển khai.
+Tenant context phải được xác lập ở biên request/job và truyền tường minh đến application/persistence. PostgreSQL là nguồn dữ liệu chuẩn; Redis không thay thế dữ liệu nghiệp vụ. Order/Payment hiện dùng PostgreSQL transactional outbox và idempotent local consumer; kết nối Celery/RabbitMQ để publish ra hệ thống ngoài vẫn **PLANNED**.
 
 Chi tiết xem [tài liệu kiến trúc](docs/architecture/overview.md).
 
@@ -138,6 +138,10 @@ Draft Order, item mutations, server-calculated total, immutable Product price sn
 ### Secure Payment Processing
 
 Payment abstraction và sandbox provider đã hỗ trợ tenant-scoped Payment Intent, idempotency, HMAC webhook, duplicate protection, atomic Order completion, Refund state và immutable financial audit. Sandbox không nhận hoặc lưu card data và simulation chỉ bật ở development/test. Xem [state machine và threat boundary của Payment](docs/architecture/payments.md).
+
+### Order và Payment Reliability
+
+Order/Payment transitions đã append transactional outbox và immutable business audit trong cùng PostgreSQL transaction. Leased worker hỗ trợ crash recovery, exponential retry/dead-letter, idempotent inbox consumer, correlation ID và tenant-scoped reconciliation diagnostics. Xem [consistency guarantees và trade-offs](docs/architecture/order-payment-reliability.md).
 
 ### Kiểm tra backend
 
@@ -243,9 +247,10 @@ Lộ trình gồm 30 Task, từ bootstrap backend, multi-tenancy, authentication
 | Task 13 – Inventory Reliability & Integration | Hoàn thành audit và integration test |
 | Task 14 – Order Management System | Hoàn thành nền tảng |
 | Task 15 – Secure Payment Processing | Hoàn thành sandbox foundation |
-| Task 16–18 – Nghiệp vụ và xử lý nền tiếp theo | PLANNED |
+| Task 16 – Order and Payment Reliability | Hoàn thành nền tảng |
+| Task 17–18 – Nghiệp vụ và xử lý nền tiếp theo | PLANNED |
 | Task 19–23 – AI, RAG và MCP | PLANNED |
 | Task 24–26 – Frontend và E2E | PLANNED |
 | Task 27–30 – CI/CD, AWS và hoàn thiện | PLANNED |
 
-Mức hoàn thành theo chuỗi Task đã giao: **15/30 Task**.
+Mức hoàn thành theo chuỗi Task đã giao: **16/30 Task**.

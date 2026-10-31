@@ -19,6 +19,7 @@ from nexus.modules.orders import models as order_models  # noqa: F401
 from nexus.modules.organizations import models as organization_models  # noqa: F401
 from nexus.modules.payments import models as payment_models  # noqa: F401
 from nexus.platform.database.base import Base
+from nexus.platform.reliability import models as reliability_models  # noqa: F401
 
 config = context.config
 if config.config_file_name is not None:

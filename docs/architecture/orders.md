@@ -84,3 +84,5 @@ Filter lịch sử hỗ trợ `status`, `created_from`, `created_to`, `page`, `p
 - Confirmation retry sau khi thành công trả `409` theo state machine; command idempotency key cho client retry xuyên network chưa được triển khai.
 - Draft không reserve stock, nên khả năng fulfill chỉ được bảo đảm tại thời điểm confirmation.
 - Cancellation hiện luôn hợp lệ với Order `confirmed`; shipment/fulfillment eligibility sẽ cần policy bổ sung khi module tương ứng được triển khai.
+
+Order transition quan trọng append transactional outbox và immutable business audit trong cùng transaction. Xem [độ tin cậy Order/Payment](order-payment-reliability.md).

@@ -69,9 +69,9 @@ Triển khai draft Order, item mutations, state transition, immutable pricing sn
 
 Triển khai Payment provider abstraction, sandbox intent/refund state, idempotency, HMAC webhook, duplicate protection, atomic Order completion và immutable financial audit. Xem [kiến trúc Payment](../architecture/payments.md).
 
-### Task 16 – Messaging, Celery và transactional outbox — PLANNED
+### Task 16 – Order and Payment Reliability — HOÀN THÀNH
 
-Cấu hình worker, event envelope, outbox publisher, retry/backoff, dead-letter handling và idempotent consumer.
+Triển khai PostgreSQL transactional outbox, leased local worker, retry/backoff, dead-letter, idempotent inbox consumer, correlation, immutable business audit và reconciliation. RabbitMQ/Celery publisher vẫn **PLANNED**. Xem [tài liệu reliability](../architecture/order-payment-reliability.md).
 
 ### Task 17 – Redis cache và distributed controls — PLANNED
 

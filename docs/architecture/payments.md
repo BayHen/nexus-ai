@@ -121,3 +121,5 @@ PostgreSQL trigger:
 - Order `completed` không tự đổi sang `cancelled` khi refund; financial state và fulfillment state được giữ tách biệt.
 - Currency conversion và multi-currency accounting chưa triển khai; amount snapshot dùng currency do intent chọn.
 - Migration `0008` mở rộng Order status với `completed`; deployment phải chạy migration trước khi bật Payment API và không nên chạy đồng thời application revision cũ không hiểu status này. Downgrade về `0007` yêu cầu không còn Order `completed` hoặc phải có kế hoạch chuyển đổi dữ liệu được phê duyệt.
+
+Payment transition append transactional outbox và immutable business audit trong cùng transaction; crash recovery, retry và reconciliation được mô tả tại [tài liệu độ tin cậy Order/Payment](order-payment-reliability.md).
