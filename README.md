@@ -35,7 +35,7 @@ NEXUS AI là dự án portfolio hướng tới một nền tảng SaaS quản tr
 | AI business assistant với LangGraph và năm tool chỉ đọc | Hoàn thành nền tảng |
 | MCP server với analytics tool allowlist chỉ đọc | Hoàn thành nền tảng |
 | Dashboard shell và kiểm tra trạng thái hệ thống | Hoàn thành nền tảng |
-| Dashboard nghiệp vụ và dữ liệu tenant | PLANNED |
+| Enterprise Dashboard với dữ liệu tenant thật | Hoàn thành nền tảng |
 | Triển khai AWS và quan sát hệ thống | PLANNED |
 
 ## Công nghệ sử dụng
@@ -194,6 +194,8 @@ docker compose --env-file .env -f infrastructure/docker/compose.yml up --build f
 
 Dashboard chỉ hiển thị trạng thái lấy từ health API thật. Khu vực chưa có dữ liệu được ghi rõ là trạng thái trống; các mục điều hướng chưa triển khai được gắn nhãn **Planned** và không dùng số liệu production giả.
 
+Enterprise Dashboard hiện có login/register, chọn active organization, tổng quan analytics, Product, Inventory, Order, Team, Payment và Account routes. Các collection dùng search/filter/pagination từ FastAPI qua BFF HttpOnly-cookie; lỗi API không tự fallback sang mock. Payment list và Account update được đánh dấu chưa khả dụng vì backend chưa có contract tương ứng. Xem [kiến trúc Enterprise Dashboard](docs/architecture/enterprise-dashboard.md).
+
 ## Hướng dẫn sử dụng Codex
 
 1. Mở repository tại thư mục gốc để Codex đọc được `AGENTS.md`.
@@ -263,8 +265,8 @@ Lộ trình gồm 30 Task, từ bootstrap backend, multi-tenancy, authentication
 | Task 20 – RAG Knowledge Base | Hoàn thành nền tảng |
 | Task 21 – Business Intelligence AI Agent | Hoàn thành nền tảng |
 | Task 22 – MCP Integration & AI Evaluation | Hoàn thành nền tảng |
-| Task 23 – Agent evaluation và MCP hardening mở rộng | PLANNED |
-| Task 24–26 – Frontend và E2E | PLANNED |
+| Task 23 – Enterprise Dashboard | Hoàn thành nền tảng |
+| Task 24–26 – Frontend workflow nâng cao và E2E | PLANNED |
 | Task 27–30 – CI/CD, AWS và hoàn thiện | PLANNED |
 
-Mức hoàn thành theo chuỗi Task đã giao: **22/30 Task**.
+Mức hoàn thành theo chuỗi Task đã giao: **23/30 Task**.

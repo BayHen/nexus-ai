@@ -14,6 +14,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     throw new ApiError("network_error", 503, "Network request failed");
   }
 
+  if (response.status === 204) return undefined as T;
   let payload: unknown;
   try {
     payload = await response.json();
@@ -21,14 +22,29 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     throw new ApiError("invalid_response", response.status, "API returned invalid JSON");
   }
 
-  if (!response.ok) {
-    throw apiErrorFromResponse(payload, response.status);
-  }
+  if (!response.ok) throw apiErrorFromResponse(payload, response.status);
   return payload as T;
 }
 
 export const apiClient = {
   get<T>(path: string): Promise<T> {
     return request<T>(path, { method: "GET" });
+  },
+  post<T>(path: string, body?: unknown, headers?: HeadersInit): Promise<T> {
+    return request<T>(path, {
+      method: "POST",
+      body: body === undefined ? undefined : JSON.stringify(body),
+      headers: { "Content-Type": "application/json", ...headers },
+    });
+  },
+  patch<T>(path: string, body: unknown): Promise<T> {
+    return request<T>(path, {
+      method: "PATCH",
+      body: JSON.stringify(body),
+      headers: { "Content-Type": "application/json" },
+    });
+  },
+  delete(path: string): Promise<void> {
+    return request<void>(path, { method: "DELETE" });
   },
 };

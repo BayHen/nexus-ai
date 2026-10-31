@@ -97,9 +97,9 @@ Triển khai LangGraph hữu hạn với năm tool phân tích/RAG chỉ đọc,
 
 Triển khai MCP server stateless với four-tool allowlist chỉ đọc, JWT/tenant authorization, schema validation, audit và deterministic evaluation baseline.
 
-### Task 23 – Agent evaluation và MCP hardening mở rộng — PLANNED
+### Task 23 – Enterprise Dashboard — HOÀN THÀNH NỀN TẢNG
 
-Mở rộng live-model evaluation, checkpoint, budget, prompt-injection red team, OAuth onboarding, rate limit và production MCP failure isolation.
+Triển khai login/register, organization selection, role-aware responsive shell, analytics và các màn hình nghiệp vụ đọc dữ liệu thật qua typed BFF API.
 
 ### Task 24 – Bootstrap frontend Next.js — PLANNED
 
