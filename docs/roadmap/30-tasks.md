@@ -93,13 +93,13 @@ Triển khai document ingestion, chunking, embedding, vector schema, tenant isol
 
 Triển khai LangGraph hữu hạn với năm tool phân tích/RAG chỉ đọc, typed contracts, tenant authorization, timeout, immutable invocation audit, citation và evaluation tích hợp.
 
-### Task 22 – Agent evaluation và approval mở rộng — PLANNED
+### Task 22 – MCP Integration và AI Evaluation — HOÀN THÀNH NỀN TẢNG
 
-Mở rộng model-based evaluation, checkpoint, budget, guardrail, prompt-injection red team và human approval cho workflow ghi riêng biệt.
+Triển khai MCP server stateless với four-tool allowlist chỉ đọc, JWT/tenant authorization, schema validation, audit và deterministic evaluation baseline.
 
-### Task 23 – MCP integration — PLANNED
+### Task 23 – Agent evaluation và MCP hardening mở rộng — PLANNED
 
-Tạo MCP client/server boundary, capability allowlist, schema validation, authorization và failure isolation.
+Mở rộng live-model evaluation, checkpoint, budget, prompt-injection red team, OAuth onboarding, rate limit và production MCP failure isolation.
 
 ### Task 24 – Bootstrap frontend Next.js — PLANNED
 

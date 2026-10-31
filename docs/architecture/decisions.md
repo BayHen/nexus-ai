@@ -12,7 +12,7 @@ Tài liệu này theo dõi các quyết định cần được viết thành Arc
 | ADR-006 | Cache-aside tenant-aware, post-commit invalidation và fail-open về PostgreSQL | Chấp nhận | 17 |
 | ADR-007 | Chunk 1.200 ký tự/overlap 200, vector 1.536 chiều và tenant-filtered cosine search | Chấp nhận | 20 |
 | ADR-008 | LangGraph hữu hạn, tool allowlist chỉ đọc và write cần workflow xác nhận riêng | Chấp nhận | 21 |
-| ADR-009 | MCP trust boundary | PLANNED | 23 |
+| ADR-009 | MCP server stateless, first-party JWT và allowlist analytics chỉ đọc | Chấp nhận | 22 |
 | ADR-010 | Topology triển khai AWS | PLANNED | 28 |
 | ADR-011 | Tenant RBAC allowlist, target-policy và immutable audit log | Chấp nhận | 10 |
 | ADR-012 | Decimal catalog price, transactional tenant SKU và future order price snapshot | Chấp nhận | 11 |

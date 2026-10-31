@@ -33,7 +33,7 @@ NEXUS AI là dự án portfolio hướng tới một nền tảng SaaS quản tr
 | Tenant-aware RAG knowledge base với pgvector | Hoàn thành nền tảng |
 | Thông báo và audit log | PLANNED |
 | AI business assistant với LangGraph và năm tool chỉ đọc | Hoàn thành nền tảng |
-| MCP integration cho AI Agent | PLANNED |
+| MCP server với analytics tool allowlist chỉ đọc | Hoàn thành nền tảng |
 | Dashboard shell và kiểm tra trạng thái hệ thống | Hoàn thành nền tảng |
 | Dashboard nghiệp vụ và dữ liệu tenant | PLANNED |
 | Triển khai AWS và quan sát hệ thống | PLANNED |
@@ -61,6 +61,8 @@ Cache hiện áp dụng cache-aside cho API đọc chi tiết Product và Catego
 Chi tiết xem [tài liệu kiến trúc](docs/architecture/overview.md).
 
 AI business assistant cung cấp `POST /api/v1/agent/ask` với LangGraph hữu hạn, tool allowlist chỉ đọc, server-side tenant/permission checks, timeout, immutable tool audit và citation từ RAG. Agent không chạy SQL do model sinh và từ chối write intent; workflow ghi tương lai phải có authorization cùng xác nhận riêng. Xem [workflow AI Agent](docs/architecture/business-intelligence-agent.md) và [mô hình bảo mật](docs/security/business-agent-security.md).
+
+MCP server riêng chạy Streamable HTTP stateless, xác thực bằng NEXUS JWT và chỉ công bố bốn analytics tool chỉ đọc. Tenant luôn được resolve từ active organization phía server; MCP không nhận tenant ID hoặc SQL từ client. Hướng dẫn cài đặt, ví dụ call và threat boundary nằm tại [tài liệu MCP integration](docs/architecture/mcp-integration.md); số đo evaluation thực tế nằm tại [báo cáo Task 22](docs/ai/evaluation-task22.md).
 
 ## Cấu trúc thư mục
 
@@ -260,8 +262,9 @@ Lộ trình gồm 30 Task, từ bootstrap backend, multi-tenancy, authentication
 | Task 19 – Revenue & Business Analytics | Hoàn thành nền tảng |
 | Task 20 – RAG Knowledge Base | Hoàn thành nền tảng |
 | Task 21 – Business Intelligence AI Agent | Hoàn thành nền tảng |
-| Task 22–23 – Evaluation mở rộng và MCP | PLANNED |
+| Task 22 – MCP Integration & AI Evaluation | Hoàn thành nền tảng |
+| Task 23 – Agent evaluation và MCP hardening mở rộng | PLANNED |
 | Task 24–26 – Frontend và E2E | PLANNED |
 | Task 27–30 – CI/CD, AWS và hoàn thiện | PLANNED |
 
-Mức hoàn thành theo chuỗi Task đã giao: **21/30 Task**.
+Mức hoàn thành theo chuỗi Task đã giao: **22/30 Task**.

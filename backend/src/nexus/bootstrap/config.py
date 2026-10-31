@@ -63,6 +63,10 @@ class Settings(BaseSettings):
     knowledge_retrieval_limit: int = Field(default=5, ge=1, le=20)
     knowledge_distance_threshold: float = Field(default=0.45, gt=0, lt=2)
     agent_tool_timeout_seconds: float = Field(default=5.0, gt=0, le=30)
+    mcp_issuer_url: str = Field(default="http://127.0.0.1:8000", pattern=r"^https?://")
+    mcp_server_url: str = Field(default="http://127.0.0.1:8001/mcp", pattern=r"^https?://")
+    mcp_host: str = "127.0.0.1"
+    mcp_port: int = Field(default=8001, ge=1, le=65535)
 
     @model_validator(mode="after")
     def reject_default_auth_secret(self) -> "Settings":
