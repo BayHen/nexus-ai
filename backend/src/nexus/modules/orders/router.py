@@ -36,7 +36,7 @@ PageSizeDependency = Annotated[int, Query(ge=1, le=100)]
 def response(order: Order, items: list[OrderItem]) -> OrderResponse:
     return OrderResponse(
         id=order.id,
-        status=cast(Literal["draft", "confirmed", "cancelled"], order.status),
+        status=cast(Literal["draft", "confirmed", "completed", "cancelled"], order.status),
         total_amount=order.total_amount,
         items=[OrderItemResponse.model_validate(item) for item in items],
         created_by_user_id=order.created_by_user_id,
@@ -85,7 +85,7 @@ async def list_orders(
     page: PageDependency = 1,
     page_size: PageSizeDependency = 20,
     order_status: Annotated[
-        Literal["draft", "confirmed", "cancelled"] | None, Query(alias="status")
+        Literal["draft", "confirmed", "completed", "cancelled"] | None, Query(alias="status")
     ] = None,
     created_from: datetime | None = None,
     created_to: datetime | None = None,

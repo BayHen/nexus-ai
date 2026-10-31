@@ -65,9 +65,9 @@ Audit Product/Inventory bằng integration test cho concurrency, rollback, tenan
 
 Triển khai draft Order, item mutations, state transition, immutable pricing snapshot, server-side totals và transaction-safe Inventory deduction/restoration. Xem [kiến trúc Order Management](../architecture/orders.md).
 
-### Task 15 – Hóa đơn và thanh toán — PLANNED
+### Task 15 – Secure Payment Processing — HOÀN THÀNH
 
-Triển khai invoice/payment state machine, idempotent command và adapter cổng thanh toán giả lập.
+Triển khai Payment provider abstraction, sandbox intent/refund state, idempotency, HMAC webhook, duplicate protection, atomic Order completion và immutable financial audit. Xem [kiến trúc Payment](../architecture/payments.md).
 
 ### Task 16 – Messaging, Celery và transactional outbox — PLANNED
 

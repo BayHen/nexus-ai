@@ -32,6 +32,9 @@ Client không gửi role hoặc tenant ID cho business API. `TenantContext` ch�
 | `order:write` | Có | Có | Có | Có | Không |
 | `order:confirm` | Có | Có | Có | Có | Không |
 | `order:cancel` | Có | Có | Có | Không | Không |
+| `payment:read` | Có | Có | Có | Có | Không |
+| `payment:write` | Có | Có | Có | Không | Không |
+| `payment:refund` | Có | Có | Không | Không | Không |
 
 Permission matrix là allowlist trong `ROLE_PERMISSIONS`. Role không có permission tương ứng luôn nhận `403 tenant_access_denied`.
 

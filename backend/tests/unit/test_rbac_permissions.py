@@ -32,6 +32,12 @@ from nexus.modules.organizations.domain import MembershipRole, Permission, has_p
         ("staff", Permission.ORDER_CANCEL, False),
         ("viewer", Permission.ORDER_READ, True),
         ("viewer", Permission.ORDER_WRITE, False),
+        ("admin", Permission.PAYMENT_REFUND, True),
+        ("manager", Permission.PAYMENT_WRITE, True),
+        ("manager", Permission.PAYMENT_REFUND, False),
+        ("staff", Permission.PAYMENT_READ, True),
+        ("staff", Permission.PAYMENT_WRITE, False),
+        ("viewer", Permission.PAYMENT_READ, False),
     ],
 )
 def test_permission_matrix(role: MembershipRole, permission: Permission, *, allowed: bool) -> None:

@@ -27,7 +27,9 @@ class Order(Base):
 
     __tablename__ = "orders"
     __table_args__ = (
-        CheckConstraint("status IN ('draft', 'confirmed', 'cancelled')", name="valid_status"),
+        CheckConstraint(
+            "status IN ('draft', 'confirmed', 'completed', 'cancelled')", name="valid_status"
+        ),
         CheckConstraint("total_amount >= 0", name="non_negative_total"),
         UniqueConstraint("organization_id", "id", name="uq_orders_org_id"),
         Index("ix_orders_org_status_created", "organization_id", "status", "created_at"),

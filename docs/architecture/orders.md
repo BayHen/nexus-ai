@@ -7,9 +7,10 @@ Module `orders` quản lý draft Order, item mutations, confirmation, cancellati
 ## State machine
 
 ```text
-draft ──confirm──> confirmed ──cancel──> cancelled
+draft ──confirm──> confirmed ──payment success──> completed
   │
   └────────────cancel──────────> cancelled
+                        confirmed ──cancel──> cancelled
 ```
 
 - Order mới luôn ở `draft`.
@@ -17,6 +18,8 @@ draft ──confirm──> confirmed ──cancel──> cancelled
 - `draft` chỉ được confirm khi có ít nhất một item và tất cả stock đều đủ.
 - `draft` có thể cancel mà không thay đổi Inventory vì chưa giữ stock.
 - `confirmed` có thể cancel; transaction hoàn lại đúng quantity đã trừ.
+- `confirmed` chuyển sang `completed` khi Payment webhook success được commit atomically.
+- `completed` là trạng thái kết thúc của Order; Refund không đảo ngược fulfillment state.
 - `cancelled` là trạng thái kết thúc. Confirm lại, cancel lại hoặc sửa item đều trả `409 invalid_order_state`.
 
 Database `CHECK` giới hạn status ở `draft`, `confirmed`, `cancelled`. Service khóa Order bằng `SELECT ... FOR UPDATE` trước mọi mutation hoặc transition, vì vậy hai confirmation đồng thời không thể cùng thành công.

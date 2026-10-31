@@ -30,6 +30,9 @@ class Permission(StrEnum):
     ORDER_WRITE = "order:write"
     ORDER_CONFIRM = "order:confirm"
     ORDER_CANCEL = "order:cancel"
+    PAYMENT_READ = "payment:read"
+    PAYMENT_WRITE = "payment:write"
+    PAYMENT_REFUND = "payment:refund"
 
 
 ROLE_PERMISSIONS: dict[MembershipRole, frozenset[Permission]] = {
@@ -55,6 +58,9 @@ ROLE_PERMISSIONS: dict[MembershipRole, frozenset[Permission]] = {
             Permission.ORDER_WRITE,
             Permission.ORDER_CONFIRM,
             Permission.ORDER_CANCEL,
+            Permission.PAYMENT_READ,
+            Permission.PAYMENT_WRITE,
+            Permission.PAYMENT_REFUND,
         }
     ),
     "manager": frozenset(
@@ -73,6 +79,8 @@ ROLE_PERMISSIONS: dict[MembershipRole, frozenset[Permission]] = {
             Permission.ORDER_WRITE,
             Permission.ORDER_CONFIRM,
             Permission.ORDER_CANCEL,
+            Permission.PAYMENT_READ,
+            Permission.PAYMENT_WRITE,
         }
     ),
     "staff": frozenset(
@@ -85,6 +93,7 @@ ROLE_PERMISSIONS: dict[MembershipRole, frozenset[Permission]] = {
             Permission.ORDER_READ,
             Permission.ORDER_WRITE,
             Permission.ORDER_CONFIRM,
+            Permission.PAYMENT_READ,
         }
     ),
     "viewer": frozenset(

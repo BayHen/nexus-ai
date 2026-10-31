@@ -33,7 +33,7 @@ class OrderItemResponse(BaseModel):
 
 class OrderResponse(BaseModel):
     id: UUID
-    status: Literal["draft", "confirmed", "cancelled"]
+    status: Literal["draft", "confirmed", "completed", "cancelled"]
     total_amount: Decimal
     items: list[OrderItemResponse]
     created_by_user_id: UUID | None

@@ -39,6 +39,9 @@ class Settings(BaseSettings):
     password_reset_expire_minutes: int = Field(default=30, ge=5, le=60)
     auth_rate_limit_attempts: int = Field(default=5, ge=1, le=100)
     auth_rate_limit_window_seconds: int = Field(default=60, ge=1, le=3600)
+    payment_webhook_secret: SecretStr | None = Field(
+        default=None, validation_alias="PAYMENT_WEBHOOK_SECRET", min_length=32
+    )
 
     @model_validator(mode="after")
     def reject_default_auth_secret(self) -> "Settings":
@@ -46,6 +49,13 @@ class Settings(BaseSettings):
         secret = self.jwt_secret_key.get_secret_value()
         if self.environment != "test" and secret.startswith("replace-with"):
             raise ValueError("JWT_SECRET_KEY must be replaced outside test")
+        payment_secret = self.payment_webhook_secret
+        if (
+            self.environment != "test"
+            and payment_secret is not None
+            and payment_secret.get_secret_value().startswith("replace-with")
+        ):
+            raise ValueError("PAYMENT_WEBHOOK_SECRET must be replaced outside test")
         return self
 
 
