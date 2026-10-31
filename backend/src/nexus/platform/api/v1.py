@@ -6,6 +6,7 @@ from nexus.modules.analytics.router import router as analytics_router
 from nexus.modules.auth.router import router as auth_router
 from nexus.modules.catalog.router import router as catalog_router
 from nexus.modules.inventory.router import router as inventory_router
+from nexus.modules.knowledge.router import router as knowledge_router
 from nexus.modules.orders.router import router as orders_router
 from nexus.modules.organizations.router import router as organizations_router
 from nexus.modules.payments.router import router as payments_router
@@ -19,6 +20,7 @@ router.include_router(auth_router)
 router.include_router(analytics_router)
 router.include_router(catalog_router)
 router.include_router(inventory_router)
+router.include_router(knowledge_router)
 router.include_router(orders_router)
 router.include_router(payments_router)
 router.include_router(reliability_router)

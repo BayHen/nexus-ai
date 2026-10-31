@@ -16,6 +16,7 @@ from nexus.modules.analytics import models as analytics_models  # noqa: F401
 from nexus.modules.auth import models as auth_models  # noqa: F401
 from nexus.modules.catalog import models as catalog_models  # noqa: F401
 from nexus.modules.inventory import models as inventory_models  # noqa: F401
+from nexus.modules.knowledge import models as knowledge_models  # noqa: F401
 from nexus.modules.orders import models as order_models  # noqa: F401
 from nexus.modules.organizations import models as organization_models  # noqa: F401
 from nexus.modules.payments import models as payment_models  # noqa: F401

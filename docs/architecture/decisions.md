@@ -10,7 +10,7 @@ Tài liệu này theo dõi các quyết định cần được viết thành Arc
 | ADR-004 | JWT access token ngắn hạn, opaque refresh token rotation và session revocation | Chấp nhận | 08 |
 | ADR-005 | Transactional outbox và idempotent consumer | PLANNED | 16 |
 | ADR-006 | Cache-aside tenant-aware, post-commit invalidation và fail-open về PostgreSQL | Chấp nhận | 17 |
-| ADR-007 | Chunking, embedding và vector search | PLANNED | 20 |
+| ADR-007 | Chunk 1.200 ký tự/overlap 200, vector 1.536 chiều và tenant-filtered cosine search | Chấp nhận | 20 |
 | ADR-008 | LangGraph state, tool policy và human approval | PLANNED | 22 |
 | ADR-009 | MCP trust boundary | PLANNED | 23 |
 | ADR-010 | Topology triển khai AWS | PLANNED | 28 |

@@ -85,7 +85,7 @@ Tạo notification preference, template, channel adapter, job nền và lịch s
 
 Triển khai revenue recognition, refund reconciliation, order/product/branch metrics, inventory valuation và CSV/XLSX export bất đồng bộ.
 
-### Task 20 – Knowledge ingestion và pgvector — PLANNED
+### Task 20 – Knowledge ingestion và pgvector — HOÀN THÀNH NỀN TẢNG
 
 Triển khai document ingestion, chunking, embedding, vector schema, tenant isolation và pipeline bất đồng bộ.
 

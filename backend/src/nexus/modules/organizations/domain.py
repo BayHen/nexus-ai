@@ -33,6 +33,8 @@ class Permission(StrEnum):
     PAYMENT_READ = "payment:read"
     PAYMENT_WRITE = "payment:write"
     PAYMENT_REFUND = "payment:refund"
+    KNOWLEDGE_READ = "knowledge:read"
+    KNOWLEDGE_WRITE = "knowledge:write"
 
 
 ROLE_PERMISSIONS: dict[MembershipRole, frozenset[Permission]] = {
@@ -61,6 +63,8 @@ ROLE_PERMISSIONS: dict[MembershipRole, frozenset[Permission]] = {
             Permission.PAYMENT_READ,
             Permission.PAYMENT_WRITE,
             Permission.PAYMENT_REFUND,
+            Permission.KNOWLEDGE_READ,
+            Permission.KNOWLEDGE_WRITE,
         }
     ),
     "manager": frozenset(
@@ -81,6 +85,8 @@ ROLE_PERMISSIONS: dict[MembershipRole, frozenset[Permission]] = {
             Permission.ORDER_CANCEL,
             Permission.PAYMENT_READ,
             Permission.PAYMENT_WRITE,
+            Permission.KNOWLEDGE_READ,
+            Permission.KNOWLEDGE_WRITE,
         }
     ),
     "staff": frozenset(
@@ -94,6 +100,8 @@ ROLE_PERMISSIONS: dict[MembershipRole, frozenset[Permission]] = {
             Permission.ORDER_WRITE,
             Permission.ORDER_CONFIRM,
             Permission.PAYMENT_READ,
+            Permission.KNOWLEDGE_READ,
+            Permission.KNOWLEDGE_WRITE,
         }
     ),
     "viewer": frozenset(
@@ -102,6 +110,7 @@ ROLE_PERMISSIONS: dict[MembershipRole, frozenset[Permission]] = {
             Permission.CATALOG_READ,
             Permission.INVENTORY_READ,
             Permission.ORDER_READ,
+            Permission.KNOWLEDGE_READ,
         }
     ),
 }

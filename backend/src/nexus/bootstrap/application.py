@@ -8,6 +8,7 @@ from fastapi import FastAPI
 
 from nexus.bootstrap.config import Settings, get_settings
 from nexus.modules.auth.rate_limit import AuthenticationRateLimiter
+from nexus.modules.knowledge.providers import DeterministicAIProvider, OpenAIKnowledgeProvider
 from nexus.platform.api.errors import register_exception_handlers
 from nexus.platform.api.health import router as health_router
 from nexus.platform.api.middleware import RequestContextMiddleware
@@ -36,6 +37,15 @@ def create_app(
         if resolved_settings.redis_url is not None
         else NullCacheService()
     )
+    knowledge_provider: OpenAIKnowledgeProvider | DeterministicAIProvider
+    if resolved_settings.openai_api_key is not None:
+        knowledge_provider = OpenAIKnowledgeProvider(
+            resolved_settings.openai_api_key.get_secret_value(),
+            resolved_settings.embedding_model,
+            resolved_settings.openai_model,
+        )
+    else:
+        knowledge_provider = DeterministicAIProvider()
 
     @asynccontextmanager
     async def lifespan(_: FastAPI) -> AsyncIterator[None]:
@@ -69,6 +79,8 @@ def create_app(
         resolved_settings.auth_rate_limit_window_seconds,
     )
     application.state.cache_service = cache_service
+    application.state.knowledge_embedding_provider = knowledge_provider
+    application.state.knowledge_answer_provider = knowledge_provider
     application.add_middleware(RequestContextMiddleware)
     register_exception_handlers(application)
     application.include_router(health_router)

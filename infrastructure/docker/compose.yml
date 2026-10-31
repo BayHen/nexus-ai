@@ -28,7 +28,7 @@ services:
       - no-new-privileges:true
 
   postgres:
-    image: postgres:17-alpine
+    image: pgvector/pgvector:pg17
     restart: unless-stopped
     stop_grace_period: 30s
     environment:

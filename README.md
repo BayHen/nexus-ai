@@ -30,6 +30,7 @@ NEXUS AI là dự án portfolio hướng tới một nền tảng SaaS quản tr
 | Redis cache tenant-aware cho Product/Category detail | Hoàn thành nền tảng |
 | Workflow nền bằng Celery và RabbitMQ | Hoàn thành nền tảng |
 | Revenue và business analytics, CSV/XLSX export | Hoàn thành nền tảng |
+| Tenant-aware RAG knowledge base với pgvector | Hoàn thành nền tảng |
 | Thông báo và audit log | PLANNED |
 | Kho tri thức, tìm kiếm vector và RAG | PLANNED |
 | AI Agent với LangGraph và công cụ MCP | PLANNED |
@@ -255,8 +256,9 @@ Lộ trình gồm 30 Task, từ bootstrap backend, multi-tenancy, authentication
 | Task 17 – Redis Caching | Hoàn thành nền tảng |
 | Task 18 – Background Processing | Hoàn thành nền tảng |
 | Task 19 – Revenue & Business Analytics | Hoàn thành nền tảng |
-| Task 20–23 – AI, RAG và MCP | PLANNED |
+| Task 20 – RAG Knowledge Base | Hoàn thành nền tảng |
+| Task 21–23 – AI Agent, evaluation mở rộng và MCP | PLANNED |
 | Task 24–26 – Frontend và E2E | PLANNED |
 | Task 27–30 – CI/CD, AWS và hoàn thiện | PLANNED |
 
-Mức hoàn thành theo chuỗi Task đã giao: **19/30 Task**.
+Mức hoàn thành theo chuỗi Task đã giao: **20/30 Task**.

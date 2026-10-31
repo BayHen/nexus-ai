@@ -54,6 +54,14 @@ class Settings(BaseSettings):
     )
     background_job_max_attempts: int = Field(default=5, ge=1, le=20)
     background_job_retry_base_seconds: int = Field(default=2, ge=1, le=300)
+    openai_api_key: SecretStr | None = Field(default=None, validation_alias="OPENAI_API_KEY")
+    openai_model: str = Field(default="gpt-4.1-mini", validation_alias="OPENAI_MODEL")
+    embedding_model: str = Field(
+        default="text-embedding-3-small", validation_alias="EMBEDDING_MODEL"
+    )
+    knowledge_max_file_bytes: int = Field(default=10 * 1024 * 1024, ge=1024, le=25 * 1024 * 1024)
+    knowledge_retrieval_limit: int = Field(default=5, ge=1, le=20)
+    knowledge_distance_threshold: float = Field(default=0.45, gt=0, lt=2)
 
     @model_validator(mode="after")
     def reject_default_auth_secret(self) -> "Settings":
