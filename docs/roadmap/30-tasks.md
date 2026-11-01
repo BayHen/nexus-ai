@@ -113,9 +113,9 @@ Threat model, checklist, remediation report và các sửa lỗi ưu tiên cao c
 
 Triển khai dashboard, tenant switcher và UI cho các module đã có, với loading/error/accessibility states.
 
-### Task 26 – Trải nghiệm AI và Playwright E2E — PLANNED
+### Task 26 – Testing & Performance Engineering — HOÀN THÀNH
 
-Xây dựng giao diện trợ lý/RAG, hiển thị nguồn, approval step và E2E cho các hành trình quan trọng.
+Thiết lập workflow xác minh tổng hợp cho unit, API, PostgreSQL transaction, tenant isolation, authorization, concurrency, browser E2E và AI evaluation; bổ sung coverage gate theo module, Locust load test bằng dữ liệu synthetic, CI và báo cáo benchmark có thể tái lập.
 
 ### Task 27 – GitHub Actions và quality gates — PLANNED
 
