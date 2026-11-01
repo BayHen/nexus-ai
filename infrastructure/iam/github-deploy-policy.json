@@ -1,0 +1,56 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "EcrAuthentication",
+      "Effect": "Allow",
+      "Action": "ecr:GetAuthorizationToken",
+      "Resource": "*"
+    },
+    {
+      "Sid": "EcrImages",
+      "Effect": "Allow",
+      "Action": [
+        "ecr:BatchCheckLayerAvailability",
+        "ecr:CompleteLayerUpload",
+        "ecr:GetDownloadUrlForLayer",
+        "ecr:InitiateLayerUpload",
+        "ecr:PutImage",
+        "ecr:UploadLayerPart"
+      ],
+      "Resource": [
+        "arn:aws:ecr:REPLACE_REGION:REPLACE_ACCOUNT:repository/nexus-ai-staging-backend",
+        "arn:aws:ecr:REPLACE_REGION:REPLACE_ACCOUNT:repository/nexus-ai-staging-frontend"
+      ]
+    },
+    {
+      "Sid": "EcsDeployment",
+      "Effect": "Allow",
+      "Action": [
+        "ecs:DescribeServices",
+        "ecs:DescribeTaskDefinition",
+        "ecs:DescribeTasks",
+        "ecs:ListTaskDefinitions",
+        "ecs:RegisterTaskDefinition",
+        "ecs:RunTask",
+        "ecs:StopTask",
+        "ecs:UpdateService"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "PassOnlyNexusRoles",
+      "Effect": "Allow",
+      "Action": "iam:PassRole",
+      "Resource": [
+        "arn:aws:iam::REPLACE_ACCOUNT:role/nexus-ai-staging-execution",
+        "arn:aws:iam::REPLACE_ACCOUNT:role/nexus-ai-staging-task"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "iam:PassedToService": "ecs-tasks.amazonaws.com"
+        }
+      }
+    }
+  ]
+}

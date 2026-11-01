@@ -1,0 +1,18 @@
+aws_region     = "ap-southeast-1"
+project_name   = "nexus-ai"
+environment    = "staging"
+backend_image  = "111122223333.dkr.ecr.ap-southeast-1.amazonaws.com/nexus-ai-staging-backend:GIT_SHA"
+frontend_image = "111122223333.dkr.ecr.ap-southeast-1.amazonaws.com/nexus-ai-staging-frontend:GIT_SHA"
+certificate_arn = "arn:aws:acm:ap-southeast-1:111122223333:certificate/REPLACE_ME"
+staging_base_url = "https://staging.example.com"
+
+# Supply sensitive inputs through TF_VAR_* environment variables or CI secrets:
+# TF_VAR_application_secret_arn
+# TF_VAR_db_password
+# TF_VAR_mq_username
+# TF_VAR_mq_password
+
+deletion_protection    = false
+backend_desired_count  = 1
+frontend_desired_count = 1
+worker_desired_count   = 1

@@ -1,0 +1,80 @@
+name: Delivery validation
+
+on:
+  pull_request:
+    paths:
+      - "backend/**"
+      - "frontend/**"
+      - "infrastructure/**"
+      - ".github/workflows/delivery-validation.yml"
+  push:
+    branches: [main]
+    paths:
+      - "backend/**"
+      - "frontend/**"
+      - "infrastructure/**"
+      - ".github/workflows/delivery-validation.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  containers:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - name: backend
+            context: backend
+          - name: frontend
+            context: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - name: Build production image
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.context }}
+          push: false
+          load: true
+          tags: nexus-ai/${{ matrix.name }}:ci
+          cache-from: type=gha,scope=${{ matrix.name }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.name }}
+      - name: Scan image for HIGH and CRITICAL vulnerabilities
+        uses: aquasecurity/trivy-action@0.30.0
+        with:
+          image-ref: nexus-ai/${{ matrix.name }}:ci
+          format: table
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: "1"
+
+  compose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate local Compose model
+        env:
+          POSTGRES_DB: nexus_ai
+          POSTGRES_USER: nexus_ai
+          POSTGRES_PASSWORD: synthetic-compose-password
+          JWT_SECRET_KEY: synthetic-compose-jwt-secret-at-least-32-characters
+          PAYMENT_WEBHOOK_SECRET: synthetic-payment-secret-at-least-32-characters
+          RABBITMQ_DEFAULT_USER: nexus_ai
+          RABBITMQ_DEFAULT_PASS: synthetic-rabbit-password
+        run: docker compose -f infrastructure/docker/compose.yml config --quiet
+
+  terraform:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: infrastructure/terraform
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.10.5"
+      - run: terraform fmt -check -recursive
+      - run: terraform init -backend=false
+      - run: terraform validate

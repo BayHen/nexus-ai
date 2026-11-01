@@ -1,17 +1,84 @@
 name: nexus-ai
 
 services:
+  backend:
+    build:
+      context: ../../backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    command:
+      [
+        "sh",
+        "-c",
+        "alembic upgrade head && exec uvicorn nexus.bootstrap.application:create_app --factory --host 0.0.0.0 --port 8000 --no-access-log",
+      ]
+    environment: &backend-environment
+      NEXUS_ENVIRONMENT: development
+      NEXUS_LOG_LEVEL: ${NEXUS_LOG_LEVEL:-INFO}
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:?POSTGRES_USER is required}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@postgres:5432/${POSTGRES_DB:?POSTGRES_DB is required}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:?JWT_SECRET_KEY is required}
+      PAYMENT_WEBHOOK_SECRET: ${PAYMENT_WEBHOOK_SECRET:?PAYMENT_WEBHOOK_SECRET is required}
+      REDIS_URL: redis://redis:6379/0
+      CELERY_BROKER_URL: amqp://${RABBITMQ_DEFAULT_USER:?RABBITMQ_DEFAULT_USER is required}:${RABBITMQ_DEFAULT_PASS:?RABBITMQ_DEFAULT_PASS is required}@rabbitmq:5672//
+      CELERY_RESULT_BACKEND: redis://redis:6379/1
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+    ports:
+      - "127.0.0.1:${APP_PORT:-8000}:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/ready', timeout=2)",
+        ]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 20s
+    security_opt:
+      - no-new-privileges:true
+
+  worker:
+    build:
+      context: ../../backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    command:
+      [
+        "celery",
+        "-A",
+        "nexus.platform.background.celery_app:celery_app",
+        "worker",
+        "--loglevel=INFO",
+        "--concurrency=2",
+      ]
+    environment: *backend-environment
+    depends_on:
+      backend:
+        condition: service_healthy
+    security_opt:
+      - no-new-privileges:true
+
   frontend:
     build:
       context: ../../frontend
       dockerfile: Dockerfile
     restart: unless-stopped
     environment:
-      API_BASE_URL: ${API_BASE_URL:-http://host.docker.internal:8000}
+      API_BASE_URL: http://backend:8000
     ports:
       - "127.0.0.1:${FRONTEND_PORT:-3000}:3000"
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+    depends_on:
+      backend:
+        condition: service_healthy
     healthcheck:
       test:
         [

@@ -39,6 +39,7 @@ NEXUS AI là dự án portfolio hướng tới một nền tảng SaaS quản tr
 | AI Assistant và Analytics UI tenant-aware | Hoàn thành |
 | Security Engineering Audit | Hoàn thành; còn remediation được ghi nhận |
 | Testing & Performance Engineering | Hoàn thành workflow; Redis integration còn bị chặn theo môi trường |
+| CI/CD và AWS staging | Hoàn thành cấu hình; chưa provision hoặc deploy |
 | Triển khai AWS và quan sát hệ thống | PLANNED |
 
 ## Công nghệ sử dụng
@@ -236,7 +237,8 @@ Sau khi cài hoặc nâng cấp external skill, chạy validator và bắt đầ
 - Playwright xác minh các hành trình desktop/mobile; Locust cung cấp baseline HTTP bằng synthetic clients. Kết quả thực tế và giới hạn được ghi tại [quy trình xác minh chất lượng](docs/testing/quality-verification.md) và [báo cáo benchmark Task 26](docs/performance/task26-benchmark.md).
 - Vitest và Testing Library đã kiểm tra typed API client, responsive navigation và các UI state dùng chung.
 - Playwright đã kiểm tra hai hành trình responsive trên Chromium; việc mở rộng hành trình nghiệp vụ và ma trận browser vẫn **PLANNED**.
-- GitHub Actions quality workflow đã chạy lint, type check, test, build, coverage gate và load smoke; dependency scan và deployment gates đầy đủ vẫn **PLANNED**.
+- GitHub Actions quality workflow chạy lint, type check, test, build, coverage gate và load smoke; delivery workflow bổ sung Trivy image scanning và Terraform validation. Các workflow mới chưa được thực thi trên GitHub Actions trong Task 27.
+- Delivery workflow build/scan production images, validate Compose/Terraform và hỗ trợ staging deployment thủ công bằng GitHub OIDC. Xem [kiến trúc AWS staging](docs/architecture/aws-staging.md) và [runbook triển khai/rollback](docs/deployment/staging-runbook.md). AWS provisioning và public deployment chưa được thực hiện.
 - Docker image và Terraform plan sẽ được kiểm tra trước khi phát hành — **PLANNED**.
 
 Riêng hệ thống Agent Skills đã có GitHub Actions workflow `Skills validation`. Workflow chạy automated tests và `scripts/validate_skills.py` để kiểm tra metadata, reference, duplicate name và registry consistency. Chi tiết về phạm vi bằng chứng và giới hạn của CI nằm tại [tài liệu Skills CI](docs/skills/ci-validation.md).
@@ -275,8 +277,9 @@ Lộ trình gồm 30 Task, từ bootstrap backend, multi-tenancy, authentication
 | Task 24 – AI Assistant & Analytics UI | Hoàn thành |
 | Task 25 – Security Engineering Audit | Hoàn thành |
 | Task 26 – Testing & Performance Engineering | Hoàn thành |
-| Task 27–30 – CI/CD, AWS và hoàn thiện | PLANNED |
+| Task 27 – CI/CD & Cloud Deployment | Hoàn thành cấu hình; chưa deploy |
+| Task 28–30 – AWS hardening, observability và hoàn thiện | PLANNED |
 
-Mức hoàn thành theo chuỗi Task đã giao: **26/30 Task**.
+Mức hoàn thành theo chuỗi Task đã giao: **27/30 Task**.
 
 Kết quả audit, threat model và các rủi ro chưa xử lý được ghi tại [tài liệu security](docs/security/remediation-report.md). Trạng thái hoàn thành Task 25 không có nghĩa ứng dụng hoàn toàn an toàn.

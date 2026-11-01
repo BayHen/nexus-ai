@@ -117,9 +117,9 @@ Triển khai dashboard, tenant switcher và UI cho các module đã có, với l
 
 Thiết lập workflow xác minh tổng hợp cho unit, API, PostgreSQL transaction, tenant isolation, authorization, concurrency, browser E2E và AI evaluation; bổ sung coverage gate theo module, Locust load test bằng dữ liệu synthetic, CI và báo cáo benchmark có thể tái lập.
 
-### Task 27 – GitHub Actions và quality gates — PLANNED
+### Task 27 – CI/CD & Cloud Deployment — HOÀN THÀNH CẤU HÌNH
 
-Thiết lập lint, format, type check, unit/integration/E2E test, migration check, image build và dependency scan.
+Bổ sung production container images, local Compose đầy đủ, CI quality/delivery gates, Trivy scanning, GitHub OIDC deployment workflow, Terraform cho AWS staging và runbook rollback. Việc provision/deploy AWS vẫn **BLOCKED** cho tới khi có phê duyệt chi phí và credentials phù hợp.
 
 ### Task 28 – Terraform và AWS foundation — PLANNED
 

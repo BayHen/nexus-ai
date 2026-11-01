@@ -1,0 +1,105 @@
+name: Deploy staging
+
+on:
+  workflow_dispatch:
+    inputs:
+      git_ref:
+        description: Commit SHA or tag to deploy
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: staging-deployment
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment: staging
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.git_ref }}
+      - name: Resolve immutable image tag
+        id: revision
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+      - name: Configure short-lived AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+      - name: Sign in to ECR
+        uses: aws-actions/amazon-ecr-login@v2
+      - name: Build immutable images
+        env:
+          BACKEND_REPOSITORY: ${{ vars.BACKEND_REPOSITORY }}
+          FRONTEND_REPOSITORY: ${{ vars.FRONTEND_REPOSITORY }}
+          IMAGE_TAG: ${{ steps.revision.outputs.sha }}
+        run: |
+          docker build --pull -t "$BACKEND_REPOSITORY:$IMAGE_TAG" backend
+          docker build --pull -t "$FRONTEND_REPOSITORY:$IMAGE_TAG" frontend
+      - name: Scan backend image
+        uses: aquasecurity/trivy-action@0.30.0
+        with:
+          image-ref: ${{ vars.BACKEND_REPOSITORY }}:${{ steps.revision.outputs.sha }}
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: "1"
+      - name: Scan frontend image
+        uses: aquasecurity/trivy-action@0.30.0
+        with:
+          image-ref: ${{ vars.FRONTEND_REPOSITORY }}:${{ steps.revision.outputs.sha }}
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: "1"
+      - name: Push scanned images
+        env:
+          BACKEND_REPOSITORY: ${{ vars.BACKEND_REPOSITORY }}
+          FRONTEND_REPOSITORY: ${{ vars.FRONTEND_REPOSITORY }}
+          IMAGE_TAG: ${{ steps.revision.outputs.sha }}
+        run: |
+          docker push "$BACKEND_REPOSITORY:$IMAGE_TAG"
+          docker push "$FRONTEND_REPOSITORY:$IMAGE_TAG"
+      - name: Register immutable task revisions without changing services
+        id: tasks
+        env:
+          BACKEND_IMAGE: ${{ vars.BACKEND_REPOSITORY }}:${{ steps.revision.outputs.sha }}
+          FRONTEND_IMAGE: ${{ vars.FRONTEND_REPOSITORY }}:${{ steps.revision.outputs.sha }}
+        run: |
+          sanitize='del(.taskDefinitionArn,.revision,.status,.requiresAttributes,.compatibilities,.registeredAt,.registeredBy)'
+          aws ecs describe-task-definition --task-definition nexus-ai-staging-backend --query taskDefinition > backend-current.json
+          jq --arg image "$BACKEND_IMAGE" "$sanitize | .containerDefinitions[0].image=\$image" backend-current.json > backend-next.json
+          aws ecs describe-task-definition --task-definition nexus-ai-staging-worker --query taskDefinition > worker-current.json
+          jq --arg image "$BACKEND_IMAGE" "$sanitize | .containerDefinitions[0].image=\$image" worker-current.json > worker-next.json
+          aws ecs describe-task-definition --task-definition nexus-ai-staging-frontend --query taskDefinition > frontend-current.json
+          jq --arg image "$FRONTEND_IMAGE" "$sanitize | .containerDefinitions[0].image=\$image" frontend-current.json > frontend-next.json
+          echo "backend=$(aws ecs register-task-definition --cli-input-json file://backend-next.json --query 'taskDefinition.taskDefinitionArn' --output text)" >> "$GITHUB_OUTPUT"
+          echo "worker=$(aws ecs register-task-definition --cli-input-json file://worker-next.json --query 'taskDefinition.taskDefinitionArn' --output text)" >> "$GITHUB_OUTPUT"
+          echo "frontend=$(aws ecs register-task-definition --cli-input-json file://frontend-next.json --query 'taskDefinition.taskDefinitionArn' --output text)" >> "$GITHUB_OUTPUT"
+      - name: Run forward-compatible database migrations
+        env:
+          CLUSTER: ${{ vars.ECS_CLUSTER }}
+          TASK_DEFINITION: ${{ steps.tasks.outputs.backend }}
+          SUBNETS: ${{ vars.ECS_PUBLIC_SUBNET_IDS }}
+          SECURITY_GROUP: ${{ vars.ECS_SECURITY_GROUP_ID }}
+        run: |
+          TASK_ARN=$(aws ecs run-task --cluster "$CLUSTER" --task-definition "$TASK_DEFINITION" --launch-type FARGATE --network-configuration "awsvpcConfiguration={subnets=[$SUBNETS],securityGroups=[$SECURITY_GROUP],assignPublicIp=ENABLED}" --overrides '{"containerOverrides":[{"name":"backend","command":["alembic","upgrade","head"]}]}' --query 'tasks[0].taskArn' --output text)
+          test "$TASK_ARN" != "None"
+          aws ecs wait tasks-stopped --cluster "$CLUSTER" --tasks "$TASK_ARN"
+          EXIT_CODE=$(aws ecs describe-tasks --cluster "$CLUSTER" --tasks "$TASK_ARN" --query 'tasks[0].containers[0].exitCode' --output text)
+          test "$EXIT_CODE" = "0"
+      - name: Update services after successful migration
+        env:
+          CLUSTER: ${{ vars.ECS_CLUSTER }}
+          BACKEND_TASK: ${{ steps.tasks.outputs.backend }}
+          FRONTEND_TASK: ${{ steps.tasks.outputs.frontend }}
+          WORKER_TASK: ${{ steps.tasks.outputs.worker }}
+        run: |
+          aws ecs update-service --cluster "$CLUSTER" --service backend --task-definition "$BACKEND_TASK"
+          aws ecs update-service --cluster "$CLUSTER" --service frontend --task-definition "$FRONTEND_TASK"
+          aws ecs update-service --cluster "$CLUSTER" --service worker --task-definition "$WORKER_TASK"
+          aws ecs wait services-stable --cluster "$CLUSTER" --services backend frontend worker
