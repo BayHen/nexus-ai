@@ -125,11 +125,11 @@ Bổ sung production container images, local Compose đầy đủ, CI quality/de
 
 Bổ sung structured JSON logging có redaction, request/correlation/trace IDs, OpenTelemetry, Prometheus metrics cho API/SQLAlchemy/Celery, Grafana dashboard, Tempo traces, alert rules, SLO baseline và incident/recovery runbook. AWS private metrics collection và alert notification delivery vẫn **PLANNED**.
 
-### Task 29 – Observability, performance và resilience — PLANNED
+### Task 29 – Portfolio-Grade Documentation — HOÀN THÀNH
 
-Thêm structured logging, metrics, tracing, dashboard, alert, load test, backup/restore và failure drills.
+Chuẩn hóa README portfolio từ bằng chứng repository; bổ sung interview guide, technical decision record và demo script dùng synthetic data. Không thêm screenshot, public URL, deployment hoặc metric chưa được xác minh.
 
-### Task 30 – Production hardening và portfolio release — PLANNED
+### Task 30 – Final hardening và portfolio release — PLANNED
 
 Hoàn tất security review, tenant isolation review, runbook, demo data, architecture diagrams, release checklist và portfolio narrative.
 

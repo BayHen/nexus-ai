@@ -1,288 +1,316 @@
-# NEXUS AI – Nền tảng quản trị doanh nghiệp đa tenant thông minh
+# NEXUS AI – Intelligent Multi-Tenant Business Management Platform
 
-## Giới thiệu dự án
+NEXUS AI là dự án portfolio mô phỏng một nền tảng SaaS quản trị doanh nghiệp đa tenant. Dự án tập trung vào năng lực Backend Python và AI Backend: transaction an toàn, tenant isolation, RBAC, asynchronous processing, RAG/AI Agent có kiểm soát, kiểm thử theo rủi ro và khả năng vận hành.
 
-NEXUS AI là dự án portfolio hướng tới một nền tảng SaaS quản trị doanh nghiệp đa tenant, kết hợp các quy trình nghiệp vụ an toàn giao dịch với AI Agent và RAG. Dự án được thiết kế cho vị trí Backend Python Engineer và AI Backend Engineer, ưu tiên chất lượng kiến trúc, khả năng kiểm thử, bảo mật và vận hành thực tế.
+> Trạng thái: Task 01–28 đã hoàn thành ở mức repository; Task 29 hoàn thiện tài liệu portfolio. AWS staging đã có Terraform và workflow nhưng **chưa provision/deploy**. Repository không có public demo URL hoặc screenshot thực đã xác minh.
 
-**Trạng thái hiện tại:** Nền tảng FastAPI, PostgreSQL, xác thực, multi-tenancy, RBAC, catalog, tồn kho, order/payment reliability, Redis cache, background processing, analytics, RAG và AI business assistant bằng LangGraph đã có implementation cùng kiểm thử tương ứng. Frontend Next.js đã có dashboard shell responsive, typed API client và trạng thái loading/empty/error dùng chung. Các phạm vi chưa triển khai được đánh dấu **PLANNED**.
+## Bài toán kinh doanh và giải pháp
 
-## Mục tiêu dự án
+Doanh nghiệp nhỏ thường phải ghép nhiều công cụ rời rạc cho catalog, tồn kho, đơn hàng, thanh toán, báo cáo và tri thức nội bộ. Điều này gây trùng dữ liệu, thiếu audit trail và khó kiểm soát quyền truy cập giữa các tổ chức.
 
-- Xây dựng backend FastAPI theo Modular Monolith và Clean Architecture.
-- Bảo đảm cô lập dữ liệu đa tenant, xác thực an toàn và RBAC.
-- Mô hình hóa các workflow nghiệp vụ có transaction boundary rõ ràng.
-- Tích hợp AI Agent, RAG, pgvector và MCP theo các boundary kiểm soát được.
-- Cung cấp frontend Next.js có type safety và trải nghiệm quản trị chuyên nghiệp.
-- Tự động hóa kiểm thử, CI/CD và hạ tầng AWS bằng Infrastructure as Code.
-- Áp dụng Skill-Driven Development để Codex thực hiện công việc nhất quán.
+NEXUS AI cung cấp một backend thống nhất theo Modular Monolith:
 
-## Các chức năng dự kiến
+- Mỗi request/job được gắn tenant context từ danh tính đáng tin cậy, không nhận tenant ID tùy ý từ client.
+- Order, Payment, Inventory dùng transaction, locking, idempotency và immutable audit history.
+- Celery/RabbitMQ xử lý công việc nền; transactional outbox giữ consistency với PostgreSQL.
+- RAG và LangGraph chỉ gọi tool allowlist có schema, authorization và audit; model không chạy SQL tùy ý.
+- Next.js dashboard sử dụng API thật và hiển thị rõ loading, empty, error, authorization state.
 
-| Nhóm chức năng | Trạng thái |
+## Chức năng đã triển khai
+
+| Capability | Trạng thái |
 |---|---|
-| Organization, membership, invitation và active tenant context | Hoàn thành nền tảng |
-| Đăng ký, đăng nhập, refresh rotation, logout và password reset grant | Hoàn thành nền tảng |
-| RBAC theo tenant với Owner, Admin, Manager, Staff và Viewer | Hoàn thành nền tảng |
-| Danh mục khách hàng và liên hệ | PLANNED |
-| Product/Category catalog, generated SKU và Decimal pricing | Hoàn thành nền tảng |
-| Tồn kho, adjustment, transfer và immutable movement ledger | Hoàn thành nền tảng |
-| Đơn hàng và sandbox payment | Hoàn thành nền tảng |
-| Redis cache tenant-aware cho Product/Category detail | Hoàn thành nền tảng |
-| Workflow nền bằng Celery và RabbitMQ | Hoàn thành nền tảng |
-| Revenue và business analytics, CSV/XLSX export | Hoàn thành nền tảng |
-| Tenant-aware RAG knowledge base với pgvector | Hoàn thành nền tảng |
-| Thông báo và audit log | PLANNED |
-| AI business assistant với LangGraph và năm tool chỉ đọc | Hoàn thành nền tảng |
-| MCP server với analytics tool allowlist chỉ đọc | Hoàn thành nền tảng |
-| Dashboard shell và kiểm tra trạng thái hệ thống | Hoàn thành nền tảng |
-| Enterprise Dashboard với dữ liệu tenant thật | Hoàn thành nền tảng |
-| AI Assistant và Analytics UI tenant-aware | Hoàn thành |
-| Security Engineering Audit | Hoàn thành; còn remediation được ghi nhận |
-| Testing & Performance Engineering | Hoàn thành workflow; Redis integration còn bị chặn theo môi trường |
-| CI/CD và AWS staging | Hoàn thành cấu hình; chưa provision hoặc deploy |
-| Observability và reliability | Hoàn thành nền tảng local; AWS alert routing còn PLANNED |
-| Triển khai AWS và quan sát hệ thống | PLANNED |
+| Authentication: Argon2id, JWT, refresh rotation/revocation, logout, password reset grant, rate limiting | Hoàn thành nền tảng |
+| Multi-tenant Organization, Membership, Branch, invitation và active organization | Hoàn thành nền tảng |
+| Tenant-scoped RBAC: Owner, Admin, Manager, Staff, Viewer | Hoàn thành nền tảng |
+| Product/Category, generated SKU, Decimal pricing, soft delete | Hoàn thành |
+| Inventory adjustment/transfer, atomic stock, immutable movement ledger | Hoàn thành |
+| Order state machine, price snapshot, inventory deduction và rollback | Hoàn thành |
+| Sandbox Payment, webhook HMAC, idempotency, refund model và financial audit | Hoàn thành nền tảng |
+| Transactional outbox, idempotent consumer và reconciliation | Hoàn thành |
+| Redis tenant-aware cache với fail-open fallback | Hoàn thành nền tảng |
+| Celery/RabbitMQ reports, test notification, low-stock và outbox jobs | Hoàn thành nền tảng |
+| Revenue analytics và asynchronous CSV/XLSX export | Hoàn thành nền tảng |
+| PDF/TXT/Markdown ingestion, pgvector retrieval, citation và no-answer behavior | Hoàn thành nền tảng |
+| LangGraph business assistant với năm read-only tools | Hoàn thành nền tảng |
+| MCP adapter với bốn read-only analytics tools | Hoàn thành nền tảng |
+| Next.js enterprise dashboard và AI/analytics workspace | Hoàn thành nền tảng |
+| JSON logs, Prometheus, OpenTelemetry, Tempo, Grafana và alert rules | Hoàn thành local foundation |
+| AWS staging | Cấu hình hoàn thành; **chưa deploy** |
 
-## Công nghệ sử dụng
+Không có xử lý thẻ thật. Payment provider chỉ là sandbox. Email provider là test provider. Các khoảng trống được liệt kê tại [Giới hạn đã biết](#giới-hạn-đã-biết).
 
-- **Backend:** Python, FastAPI, SQLAlchemy 2, Alembic, PostgreSQL, pgvector.
-- **Frontend:** Next.js, React, TypeScript, Tailwind CSS.
-- **Bất đồng bộ và cache:** Celery, RabbitMQ, Redis.
-- **AI:** OpenAI API, LangGraph, RAG, MCP.
-- **Hạ tầng:** Docker, AWS, Terraform, GitHub Actions.
-- **Kiểm thử:** pytest, Playwright.
-- **Quy trình phát triển:** Codex và Agent Skills.
+## Công nghệ
 
-Các dependency cụ thể chưa được cài đặt trong Task 01 và sẽ được khóa phiên bản ở các Task phù hợp.
+- Backend: Python 3.12+, FastAPI, Pydantic Settings, SQLAlchemy 2, Alembic.
+- Data: PostgreSQL 17, pgvector, Redis.
+- Async: Celery, RabbitMQ, transactional outbox.
+- AI: OpenAI API, LangGraph, embeddings, RAG, MCP.
+- Frontend: Next.js 16, React 19, TypeScript, Tailwind CSS.
+- Quality: pytest, Ruff, mypy, Vitest, Playwright, Locust.
+- Delivery: multi-stage Docker, GitHub Actions, Trivy, Terraform, AWS ECS Fargate.
+- Observability: structured JSON logging, Prometheus, OpenTelemetry Collector, Tempo, Grafana.
 
-## Kiến trúc hệ thống
+## Kiến trúc
 
-Hệ thống sử dụng **Modular Monolith**: một đơn vị triển khai backend nhưng chia thành các module nghiệp vụ có ownership và dependency rule rõ ràng. Mỗi module sẽ tổ chức theo các lớp `domain`, `application`, `infrastructure` và `presentation`; dependency hướng vào trong. Các capability dùng chung nằm trong `platform`, còn composition root nằm trong `bootstrap`.
+```mermaid
+flowchart LR
+    U[Browser] --> F[Next.js / BFF]
+    F --> A[FastAPI Modular Monolith]
+    A --> AUTH[Auth / Organizations / RBAC]
+    A --> BIZ[Catalog / Inventory / Orders / Payments]
+    A --> AI[Analytics / RAG / LangGraph / MCP]
+    AUTH --> PG[(PostgreSQL + pgvector)]
+    BIZ --> PG
+    AI --> PG
+    A --> R[(Redis)]
+    A --> MQ[(RabbitMQ)]
+    MQ --> W[Celery Worker]
+    W --> PG
+    A --> OT[OTel Collector]
+    W --> OT
+    OT --> T[Tempo]
+    A --> P[Prometheus]
+    W --> P
+    P --> G[Grafana]
+    T --> G
+```
 
-Tenant context phải được xác lập ở biên request/job và truyền tường minh đến application/persistence. PostgreSQL là nguồn dữ liệu chuẩn; Redis không thay thế dữ liệu nghiệp vụ. Order/Payment dùng PostgreSQL transactional outbox và idempotent consumer. Celery/RabbitMQ vận chuyển durable background job ID cho report, test notification, low-stock alert và outbox processing; chi tiết startup và recovery nằm tại [tài liệu xử lý nền](docs/architecture/background-processing.md).
+Backend là một deployment unit nhưng module ownership tách rõ. Framework nằm ngoài domain; transaction boundary nằm ở application/service; PostgreSQL là source of truth. Tổng quan chi tiết tại [docs/architecture/overview.md](docs/architecture/overview.md).
 
-Cache hiện áp dụng cache-aside cho API đọc chi tiết Product và Category. Hệ thống xác thực và resolve tenant trước khi truy cập Redis; key chứa `organization_id`, mutation chỉ invalidation sau khi transaction commit, và lỗi Redis tự fallback về PostgreSQL. Chi tiết chiến lược, metric và benchmark thực tế nằm tại [tài liệu Redis caching](docs/architecture/redis-caching.md).
+### Trade-off chính
 
-Chi tiết xem [tài liệu kiến trúc](docs/architecture/overview.md).
+- Modular Monolith thay microservices: giảm network/distributed transaction complexity, đổi lại cần kỷ luật module boundary.
+- Pessimistic locking cho stock/order confirmation: ưu tiên consistency hơn write throughput cực cao.
+- Transactional outbox: không mất event sau commit, đổi lại event chỉ đạt eventual delivery và cần idempotent consumer.
+- Redis cache-aside fail-open: availability tốt hơn khi cache lỗi nhưng PostgreSQL có thể tăng tải.
+- RAG dùng tenant filter trong persistence: giảm cross-tenant leakage; retrieval quality phụ thuộc chunking/embedding.
+- ECS Fargate single-AZ staging: tiết kiệm vận hành/chi phí hơn Kubernetes, không phải kiến trúc HA production.
+- OpenTelemetry sampling 10% ở staging: kiểm soát chi phí, có thể bỏ sót trace hiếm.
 
-AI business assistant cung cấp `POST /api/v1/agent/ask` với LangGraph hữu hạn, tool allowlist chỉ đọc, server-side tenant/permission checks, timeout, immutable tool audit và citation từ RAG. Agent không chạy SQL do model sinh và từ chối write intent; workflow ghi tương lai phải có authorization cùng xác nhận riêng. Xem [workflow AI Agent](docs/architecture/business-intelligence-agent.md) và [mô hình bảo mật](docs/security/business-agent-security.md).
+Các quyết định và cách trình bày trong phỏng vấn nằm tại [technical-decisions.md](docs/portfolio/technical-decisions.md).
 
-MCP server riêng chạy Streamable HTTP stateless, xác thực bằng NEXUS JWT và chỉ công bố bốn analytics tool chỉ đọc. Tenant luôn được resolve từ active organization phía server; MCP không nhận tenant ID hoặc SQL từ client. Hướng dẫn cài đặt, ví dụ call và threat boundary nằm tại [tài liệu MCP integration](docs/architecture/mcp-integration.md); số đo evaluation thực tế nằm tại [báo cáo Task 22](docs/ai/evaluation-task22.md).
-
-## Cấu trúc thư mục
+## Cấu trúc repository
 
 ```text
 nexus-ai/
-├── .agents/skills/             # Agent Skills riêng của dự án
+├── .agents/skills/                 # 13 project skills + external playwright skill
+├── .github/workflows/              # Skills, quality, delivery và staging deployment
 ├── backend/
-│   ├── src/nexus/
-│   │   ├── bootstrap/          # Composition root và cấu hình khởi động
-│   │   ├── modules/            # Các bounded module nghiệp vụ tương lai
-│   │   └── platform/           # Capability kỹ thuật dùng chung
-│   ├── migrations/             # Alembic migrations tương lai
-│   └── tests/                  # Unit, integration, contract tests
+│   ├── src/nexus/bootstrap/        # Composition root và Settings
+│   ├── src/nexus/modules/          # Bounded business modules
+│   ├── src/nexus/platform/         # DB, cache, jobs, reliability, telemetry
+│   ├── migrations/                 # Alembic revisions
+│   └── tests/                      # Unit, contract, integration, evaluation, performance
 ├── frontend/
-│   ├── src/app/                # App Router, page và Route Handler
-│   ├── src/components/         # Layout và UI state dùng chung
-│   ├── src/lib/api/            # Typed API client và error contract
-│   └── tests/                  # Unit và component tests
+│   ├── src/app/                    # App Router pages và BFF Route Handlers
+│   ├── src/components/             # Reusable UI
+│   ├── src/lib/                    # Typed API/auth utilities
+│   ├── tests/                      # Vitest
+│   └── e2e/                        # Playwright
 ├── infrastructure/
-│   ├── docker/                 # Docker assets
-│   └── terraform/              # Hạ tầng AWS theo môi trường/module
-├── docs/
-│   ├── architecture/           # Tài liệu và quyết định kiến trúc
-│   └── roadmap/                # Lộ trình triển khai
-├── scripts/                    # Script phát triển/vận hành có kiểm soát
-└── tests/                      # Kiểm thử end-to-end cấp hệ thống
+│   ├── docker/                     # Local Compose
+│   ├── observability/              # Prometheus/Grafana/Tempo/OTel
+│   └── terraform/                  # AWS staging IaC
+├── docs/                           # Kiến trúc, security, runbook, portfolio
+└── scripts/                        # Skills và coverage validators
 ```
 
-Các thư mục rỗng hiện được giữ bằng `.gitkeep`; chưa có business module nào được triển khai.
+## Chạy local bằng Docker Compose
 
-## Hướng dẫn cài đặt
+### Yêu cầu
 
-Yêu cầu hiện tại: Python 3.12 trở lên. Từ repository root trên Windows PowerShell:
+- Docker Desktop có Compose v2.
+- Tối thiểu khoảng 8 GiB RAM khả dụng nếu chạy cả observability profile.
+- Không cần cài PostgreSQL, Redis hoặc RabbitMQ trực tiếp.
+
+### Khởi động application
 
 ```powershell
-python -m venv backend/.venv
-backend/.venv/Scripts/python.exe -m pip install -e "backend[dev]"
 Copy-Item .env.example .env
-docker compose --env-file .env -f infrastructure/docker/compose.yml up -d postgres
-backend/.venv/Scripts/python.exe -m alembic -c backend/alembic.ini upgrade head
-backend/.venv/Scripts/python.exe -m uvicorn nexus.main:app --host 127.0.0.1 --port 8000
+# Mở .env và thay tất cả giá trị replace-with-* bằng secret local ngẫu nhiên.
+docker compose --env-file .env -f infrastructure/docker/compose.yml config
+docker compose --env-file .env -f infrastructure/docker/compose.yml build
+docker compose --env-file .env -f infrastructure/docker/compose.yml up -d
+docker compose --env-file .env -f infrastructure/docker/compose.yml ps
 ```
 
-File `.env` là cấu hình cục bộ và không được commit. Các giá trị `NEXUS_*` trong `.env.example` điều khiển app name, environment, debug, log level và API prefix.
+Backend container tự chạy `alembic upgrade head` trước Uvicorn; worker chỉ bắt đầu sau khi readiness pass.
 
-Sau khi server khởi động:
+| URL local | Mục đích |
+|---|---|
+| `http://127.0.0.1:3000` | Dashboard |
+| `http://127.0.0.1:8000/api/v1` | API metadata |
+| `http://127.0.0.1:8000/docs` | Swagger UI ngoài production |
+| `http://127.0.0.1:8000/openapi.json` | OpenAPI schema |
+| `http://127.0.0.1:8000/health/live` | Liveness |
+| `http://127.0.0.1:8000/health/ready` | Readiness |
 
-- API metadata: `http://127.0.0.1:8000/api/v1`
-- Liveness: `http://127.0.0.1:8000/health/live`
-- Readiness: `http://127.0.0.1:8000/health/ready`
-- Swagger UI: `http://127.0.0.1:8000/docs`
-- OpenAPI schema: `http://127.0.0.1:8000/openapi.json`
-
-Các lệnh trên đã được kiểm chứng với Python 3.14.3 trong môi trường phát triển hiện tại. Nhấn `Ctrl+C` để dừng Uvicorn.
-
-API dùng fail-fast startup: Uvicorn không hoàn tất startup nếu PostgreSQL không reachable. Quy trình migration, transaction, backup, restore và reset volume nằm tại [tài liệu database cục bộ](docs/database/local-development.md).
-
-### Authentication
-
-Sau khi chạy migration mới nhất, các endpoint authentication nằm dưới `/api/v1/auth`. Hệ thống dùng Argon2id, JWT access token ngắn hạn, opaque refresh token rotation/revocation, login rate limiting và password-reset grant single-use. Xem [tài liệu xác thực](docs/security/authentication.md) để biết contract, biến môi trường, giới hạn rate limiter và trạng thái email delivery **PLANNED**.
-
-### Multi-tenancy
-
-Organization, membership, active organization selection, invitation cho user đã đăng ký và tenant-scoped Branch API đã được triển khai. Business API resolve tenant từ access token và active context phía server, không tin `organization_id` do client tự gửi. Xem [kiến trúc multi-tenancy](docs/architecture/multi-tenancy.md) để biết invariant database, role matrix, pagination và threat model chống cross-tenant bypass.
-
-### RBAC và audit
-
-Permission allowlist được thực thi trong service cho năm role Owner, Admin, Manager, Staff và Viewer. Role management có target-policy chống privilege escalation, active owner cuối cùng được bảo vệ bằng row lock, và sensitive membership changes tạo immutable audit event. Xem [permissions matrix và audit schema](docs/security/rbac.md).
-
-### Product Catalog
-
-Product và Category CRUD đã hỗ trợ tenant isolation, generated SKU theo organization, `Decimal` pricing, search/filter/sort/pagination và soft deletion. Category có Product active không thể bị xóa âm thầm. Xem [kiến trúc Product Catalog](docs/architecture/product-catalog.md) để biết database constraints và quy tắc future Order price snapshot.
-
-### Inventory
-
-Stock theo Branch/Product, adjustment, atomic transfer, low-stock reporting, negative-stock policy và idempotent immutable movement ledger đã được triển khai. Mutation dùng row locking và transaction boundary để giữ consistency khi request đồng thời hoặc thất bại. Xem [kiến trúc Inventory](docs/architecture/inventory.md).
-
-### Order Management
-
-Draft Order, item mutations, server-calculated total, immutable Product price snapshot, confirmation và cancellation đã được triển khai. Confirmation trừ Inventory bằng pessimistic locking trong cùng transaction; cancellation của Order confirmed hoàn stock và ghi movement audit. Xem [state machine và chính sách Inventory](docs/architecture/orders.md).
-
-### Secure Payment Processing
-
-Payment abstraction và sandbox provider đã hỗ trợ tenant-scoped Payment Intent, idempotency, HMAC webhook, duplicate protection, atomic Order completion, Refund state và immutable financial audit. Sandbox không nhận hoặc lưu card data và simulation chỉ bật ở development/test. Xem [state machine và threat boundary của Payment](docs/architecture/payments.md).
-
-### Order và Payment Reliability
-
-Order/Payment transitions đã append transactional outbox và immutable business audit trong cùng PostgreSQL transaction. Leased worker hỗ trợ crash recovery, exponential retry/dead-letter, idempotent inbox consumer, correlation ID và tenant-scoped reconciliation diagnostics. Xem [consistency guarantees và trade-offs](docs/architecture/order-payment-reliability.md).
-
-### Kiểm tra backend
+### Observability profile
 
 ```powershell
-Set-Location backend
-.venv/Scripts/python.exe -m ruff format --check .
-.venv/Scripts/python.exe -m ruff check .
-.venv/Scripts/python.exe -m mypy .
-.venv/Scripts/python.exe -m pytest -q
+docker compose --env-file .env -f infrastructure/docker/compose.yml --profile observability up -d
 ```
 
-### Chạy frontend cục bộ
+Grafana chạy tại `http://127.0.0.1:3001`, Prometheus tại `http://127.0.0.1:9090`. Không expose các endpoint này ra Internet.
 
-Yêu cầu Node.js 24 trở lên và npm. Khởi động backend ở cổng `8000` trước, sau đó mở terminal mới tại repository root:
+### Dừng local
 
 ```powershell
-Set-Location frontend
-npm ci
-$env:API_BASE_URL = "http://127.0.0.1:8000"
-npm run dev
+docker compose --env-file .env -f infrastructure/docker/compose.yml down
 ```
 
-Mở `http://127.0.0.1:3000`. Browser gọi Route Handler cùng origin tại `/api/backend/health`; Next.js gọi FastAPI bằng `API_BASE_URL`, vì vậy URL nội bộ của backend không được đưa vào browser bundle.
+Lệnh trên giữ volume. Chỉ xóa volume khi đã backup và chủ động muốn reset dữ liệu; xem [database runbook](docs/database/local-development.md).
 
-Kiểm tra chất lượng và production build:
+## Biến môi trường
+
+`.env.example` là template duy nhất được commit. `.env` bị Git ignore.
+
+| Nhóm | Biến quan trọng | Ghi chú |
+|---|---|---|
+| Runtime | `NEXUS_ENVIRONMENT`, `NEXUS_LOG_LEVEL`, `APP_PORT` | `production` tắt OpenAPI UI |
+| PostgreSQL | `POSTGRES_*`, `DATABASE_URL` | Không dùng credential production ở local/test |
+| Authentication | `JWT_SECRET_KEY`, token expiry, rate-limit settings | JWT secret tối thiểu 32 ký tự |
+| Payment | `PAYMENT_WEBHOOK_SECRET` | Tách biệt JWT secret; sandbox only |
+| Cache/jobs | `REDIS_URL`, `CELERY_BROKER_URL`, `CELERY_RESULT_BACKEND` | Tenant context vẫn được xác thực trước cache/job |
+| AI | `OPENAI_API_KEY`, `OPENAI_MODEL`, `EMBEDDING_MODEL` | Để trống nếu không gọi OpenAI live |
+| MCP | `NEXUS_MCP_*` | MCP không nhận tenant ID tùy ý |
+| Telemetry | `OTEL_EXPORTER_OTLP_ENDPOINT`, sampling, Grafana password | Không capture body/header nhạy cảm |
+| AWS CLI local | `AWS_PROFILE`, `AWS_REGION` | CI dùng OIDC, không dùng static access key |
+
+## Database migration
 
 ```powershell
-Set-Location frontend
-npm run lint
-npm run typecheck
-npm test
-npm run build
-npm start
+docker compose --env-file .env -f infrastructure/docker/compose.yml exec backend alembic current
+docker compose --env-file .env -f infrastructure/docker/compose.yml exec backend alembic upgrade head
 ```
 
-Chạy frontend bằng Docker Compose, sau khi đã tạo `.env` với các biến PostgreSQL bắt buộc:
+Migration chạy trên PostgreSQL disposable trong integration tests. Application rollback không tự downgrade schema; mặc định dùng expand-contract và roll-forward. Không chạy migration production nếu chưa có backup/review plan.
+
+## API và demo
+
+OpenAPI là contract chính tại `/openapi.json`; Swagger UI tại `/docs` chỉ bật ngoài production. Luồng demo có thể tái lập được mô tả trong [demo-script.md](docs/portfolio/demo-script.md), gồm authentication, tenant selection, Product/Inventory, Order/Payment, analytics và AI workspace.
+
+Không có tài khoản demo hard-code hoặc production data. Mọi dữ liệu demo phải là synthetic.
+
+## Agent Skills và Codex workflow
+
+Repository có 13 skill nội bộ: `feature-delivery`, `project-planner`, `python-backend`, `api-design`, `database-design`, `security-review`, `test-engineering`, `frontend-engineering`, `ai-rag-engineering`, `agent-orchestration`, `devops-cloud`, `observability`, `documentation`.
+
+Codex đọc `AGENTS.md`, chọn tập skill nhỏ nhất, đọc toàn bộ `SKILL.md`, thực hiện đúng một Task, chạy verification phù hợp và báo cáo bằng chứng. Skill registry/validator không chứng minh skill đã được runtime load trong mọi turn.
 
 ```powershell
-docker compose --env-file .env -f infrastructure/docker/compose.yml up --build frontend
+python scripts/validate_skills.py
+python -m unittest discover -s tests/skills -p "test_*.py" -v
 ```
 
-Dashboard chỉ hiển thị trạng thái lấy từ health API thật. Khu vực chưa có dữ liệu được ghi rõ là trạng thái trống; các mục điều hướng chưa triển khai được gắn nhãn **Planned** và không dùng số liệu production giả.
-
-Enterprise Dashboard hiện có login/register, chọn active organization, tổng quan analytics, Product, Inventory, Order, Team, Payment và Account routes. Các collection dùng search/filter/pagination từ FastAPI qua BFF HttpOnly-cookie; lỗi API không tự fallback sang mock. Payment list và Account update được đánh dấu chưa khả dụng vì backend chưa có contract tương ứng. Xem [kiến trúc Enterprise Dashboard](docs/architecture/enterprise-dashboard.md).
-
-AI workspace tại `/assistant` hỗ trợ hội thoại, lịch sử tạm thời theo organization, upload tài liệu, trạng thái indexing, citations và trạng thái tool execution. Analytics hỗ trợ khoảng ngày, so sánh với kỳ liền trước, biểu đồ doanh thu và cảnh báo tồn kho. Tenant và authorization luôn do backend xác định; UI không nhận API key và không render HTML do AI sinh ra. Xem [hành trình AI Assistant](docs/architecture/ai-assistant-ui.md).
-
-## Hướng dẫn sử dụng Codex
-
-1. Mở repository tại thư mục gốc để Codex đọc được `AGENTS.md`.
-2. Giao đúng một Task trong [lộ trình 30 Task](docs/roadmap/30-tasks.md) cho mỗi phiên làm việc.
-3. Yêu cầu Codex kiểm tra thay đổi hiện có trước khi chỉnh sửa và không mở rộng sang Task tiếp theo.
-4. Yêu cầu báo cáo file thay đổi, lệnh kiểm tra đã chạy, kết quả và vấn đề còn lại.
-5. Dùng Git commit message bằng tiếng Anh; tài liệu trong `docs/` và README phải bằng tiếng Việt.
-
-## Hệ thống Agent Skills dự kiến
-
-Thư mục `.agents/skills/` là nơi chứa Agent Skills cấp dự án. Mỗi skill tương lai có một thư mục riêng với `SKILL.md`, trigger rõ ràng và tài nguyên tối thiểu. Các skill dự kiến gồm:
-
-- `backend-module`: tạo skeleton module đúng dependency rule — **PLANNED**.
-- `database-migration`: tạo và kiểm tra migration an toàn — **PLANNED**.
-- `tenant-security-review`: rà soát tenant isolation và authorization — **PLANNED**.
-- `api-contract`: chuẩn hóa REST API và OpenAPI contract — **PLANNED**.
-- `ai-evaluation`: xây dựng evaluation cho RAG/Agent — **PLANNED**.
-- `release-readiness`: kiểm tra chất lượng trước triển khai — **PLANNED**.
-
-Task 01 chỉ chuẩn bị vị trí và quy ước, chưa tạo các skill nghiệp vụ.
+Chi tiết invocation tại [usage-guide.md](docs/skills/usage-guide.md).
 
 ### External Skill
 
-Dự án tích hợp có kiểm soát external skill `playwright` từ repository chính thức `openai/skills` để hỗ trợ browser-based validation. Skill được lưu trong `.agents/skills/playwright`, pin bằng full commit SHA, giữ nguyên license/notice và đã được review tĩnh trước khi cài.
+`playwright` được lấy từ official `openai/skills`, pin tại revision `49f948faa9258a0c61caceaf225e179651397431`, giữ Apache-2.0 license/notice. Không tự động chạy upstream script hoặc cài dependency chưa review. Cài đặt, audit, upgrade và rollback tại [external-skills.md](docs/skills/external-skills.md); nguồn chuẩn tại [registry.md](docs/skills/registry.md).
 
-Quy trình không tự động chạy script hoặc cài npm dependency của external skill. Hướng dẫn audit, cài đặt tái lập, rollback và nâng cấp nằm tại [tài liệu External Skills](docs/skills/external-skills.md). Danh sách source và revision chuẩn nằm trong [Skills registry](docs/skills/registry.md).
+## Security design
 
-Sau khi cài hoặc nâng cấp external skill, chạy validator và bắt đầu một Codex session mới để catalog được làm mới.
+- Argon2id password hashing; không lưu password/refresh token plaintext.
+- JWT issuer/audience/expiry validation và opaque refresh rotation/replay revocation.
+- Tenant context lấy từ authenticated membership; repository/service luôn scope organization.
+- Permission allowlist và chống privilege escalation/last-owner removal.
+- Idempotency, row lock, immutable audit và generic auth errors.
+- HMAC webhook verification; không lưu card data.
+- File type/size validation; retrieved content được coi là untrusted.
+- AI/MCP tool authorization phía server; không model-generated SQL.
+- Telemetry không chứa token, prompt, document, raw SQL hoặc tenant/user ID.
 
-## Testing và CI/CD
+Threat model, checklist và remediation còn mở tại [docs/security/](docs/security/). “Hoàn thành audit” không có nghĩa ứng dụng hoàn toàn an toàn.
 
-- pytest đã bao phủ unit, API, PostgreSQL transaction/migration, tenant isolation, authorization, concurrency và AI evaluation; coverage gate được áp dụng riêng cho các module nghiệp vụ quan trọng.
-- Playwright xác minh các hành trình desktop/mobile; Locust cung cấp baseline HTTP bằng synthetic clients. Kết quả thực tế và giới hạn được ghi tại [quy trình xác minh chất lượng](docs/testing/quality-verification.md) và [báo cáo benchmark Task 26](docs/performance/task26-benchmark.md).
-- Vitest và Testing Library đã kiểm tra typed API client, responsive navigation và các UI state dùng chung.
-- Playwright đã kiểm tra hai hành trình responsive trên Chromium; việc mở rộng hành trình nghiệp vụ và ma trận browser vẫn **PLANNED**.
-- GitHub Actions quality workflow chạy lint, type check, test, build, coverage gate và load smoke; delivery workflow bổ sung Trivy image scanning và Terraform validation. Các workflow mới chưa được thực thi trên GitHub Actions trong Task 27.
-- Delivery workflow build/scan production images, validate Compose/Terraform và hỗ trợ staging deployment thủ công bằng GitHub OIDC. Xem [kiến trúc AWS staging](docs/architecture/aws-staging.md) và [runbook triển khai/rollback](docs/deployment/staging-runbook.md). AWS provisioning và public deployment chưa được thực hiện.
-- OpenTelemetry, Prometheus, Grafana, Tempo và structured JSON logs cung cấp signal cho API, database, worker, readiness và error rate. SLO, alert threshold, privacy boundary và recovery procedure nằm tại [observability runbook](docs/operations/observability-runbook.md).
-- Docker image và Terraform plan sẽ được kiểm tra trước khi phát hành — **PLANNED**.
+## AI, RAG và MCP
 
-Riêng hệ thống Agent Skills đã có GitHub Actions workflow `Skills validation`. Workflow chạy automated tests và `scripts/validate_skills.py` để kiểm tra metadata, reference, duplicate name và registry consistency. Chi tiết về phạm vi bằng chứng và giới hạn của CI nằm tại [tài liệu Skills CI](docs/skills/ci-validation.md).
+RAG ingestion xác thực tenant/document, trích PDF/TXT/Markdown, chunk, embed và lưu pgvector. Retrieval luôn có tenant filter, answer kèm citation hoặc trả no-answer rõ ràng. Chi tiết tại [rag-knowledge-base.md](docs/architecture/rag-knowledge-base.md).
 
-Mapping giữa phase và skill nằm tại [phase-to-skill mapping](docs/skills/phase-skill-mapping.md); audit có thể dùng [mẫu báo cáo audit Task](docs/skills/task-audit-report-template.md).
+LangGraph agent có explicit state transitions và năm read-only tools: revenue, top products, inventory alerts, period comparison và knowledge search. Tool input/output typed, timeout, authorization và immutable audit. Xem [business-intelligence-agent.md](docs/architecture/business-intelligence-agent.md).
 
-Backend và frontend đã có application test suite nền tảng. Các bài kiểm thử nghiệp vụ và E2E vẫn **PLANNED**.
+MCP adapter chỉ expose bốn approved analytics tools, xác thực NEXUS JWT và resolve active tenant phía server. MCP không expose database operation. Xem [mcp-integration.md](docs/architecture/mcp-integration.md) và [evaluation-task22.md](docs/ai/evaluation-task22.md).
 
-## Lộ trình phát triển 30 Task
+## Testing và kết quả thực tế
 
-Lộ trình gồm 30 Task, từ bootstrap backend, multi-tenancy, authentication và các workflow nghiệp vụ đến AI/RAG, frontend, CI/CD, AWS và hardening. Trạng thái thực thi hiện hành được ghi ở bảng bên dưới; các phạm vi chưa hoàn thành vẫn là **PLANNED**. Danh sách và tiêu chí đầu ra chi tiết nằm tại [lộ trình triển khai](docs/roadmap/30-tasks.md).
+Test strategy không dùng coverage percentage làm bằng chứng duy nhất:
 
-## Trạng thái hoàn thành dự án
+- Unit/contract cho domain, validation, API error và telemetry privacy.
+- PostgreSQL integration cho migration, transaction, tenant/RBAC và rollback.
+- Concurrency cho SKU, stock, order confirmation và payment webhook.
+- AI evaluation cho retrieval, no-answer, citations, tool selection và tenant isolation.
+- Vitest/Playwright cho frontend component và responsive browser flow.
+- Locust dùng synthetic workload cho HTTP baseline.
 
-| Phạm vi | Trạng thái |
+Kết quả đã thực thi gần nhất:
+
+| Suite | Kết quả |
 |---|---|
-| Task 01 – Khởi tạo và kiến trúc | Hoàn thành |
-| Task 02–06 – Agent Skills, backend và database foundation | Hoàn thành |
-| Task 07 – Frontend foundation | Hoàn thành |
-| Task 08 – Authentication system | Hoàn thành nền tảng |
-| Task 09 – Multi-Tenant Organizations | Hoàn thành nền tảng |
-| Task 10 – Role-Based Access Control | Hoàn thành nền tảng |
-| Task 11 – Product Catalog Management | Hoàn thành nền tảng |
-| Task 12 – Inventory Management | Hoàn thành nền tảng |
-| Task 13 – Inventory Reliability & Integration | Hoàn thành audit và integration test |
-| Task 14 – Order Management System | Hoàn thành nền tảng |
-| Task 15 – Secure Payment Processing | Hoàn thành sandbox foundation |
-| Task 16 – Order and Payment Reliability | Hoàn thành nền tảng |
-| Task 17 – Redis Caching | Hoàn thành nền tảng |
-| Task 18 – Background Processing | Hoàn thành nền tảng |
-| Task 19 – Revenue & Business Analytics | Hoàn thành nền tảng |
-| Task 20 – RAG Knowledge Base | Hoàn thành nền tảng |
-| Task 21 – Business Intelligence AI Agent | Hoàn thành nền tảng |
-| Task 22 – MCP Integration & AI Evaluation | Hoàn thành nền tảng |
-| Task 23 – Enterprise Dashboard | Hoàn thành nền tảng |
-| Task 24 – AI Assistant & Analytics UI | Hoàn thành |
-| Task 25 – Security Engineering Audit | Hoàn thành |
-| Task 26 – Testing & Performance Engineering | Hoàn thành |
-| Task 27 – CI/CD & Cloud Deployment | Hoàn thành cấu hình; chưa deploy |
-| Task 28 – Observability & Reliability | Hoàn thành nền tảng |
-| Task 29–30 – AWS hardening và hoàn thiện | PLANNED |
+| Backend full PostgreSQL suite tại Task 26 | 113 pass, 3 Redis tests skip; coverage tổng 89% |
+| Backend deterministic regression tại Task 28 | 65 pass, 58 integration/performance deselected |
+| Database telemetry integration tại Task 28 | 2 pass |
+| Frontend Vitest tại Task 26 | 16 pass |
+| Playwright Chromium tại Task 26 | 2 pass |
+| Observability/health focused suite | 12 pass |
 
-Mức hoàn thành theo chuỗi Task đã giao: **28/30 Task**.
+Chi tiết command và coverage gates tại [quality-verification.md](docs/testing/quality-verification.md). Các kết quả ở những thời điểm khác nhau không được cộng lại thành một tổng giả.
 
-Kết quả audit, threat model và các rủi ro chưa xử lý được ghi tại [tài liệu security](docs/security/remediation-report.md). Trạng thái hoàn thành Task 25 không có nghĩa ứng dụng hoàn toàn an toàn.
+## CI/CD và deployment
+
+- `quality-verification.yml`: Ruff, mypy, pytest/coverage, frontend typecheck/lint/test/build/E2E và load smoke.
+- `delivery-validation.yml`: build multi-stage images, Trivy HIGH/CRITICAL gate, Compose và Terraform validation.
+- `deploy-staging.yml`: manual GitHub Environment approval, short-lived AWS OIDC, immutable Git SHA image, migration trước ECS service update.
+
+Terraform định nghĩa HTTPS ALB, ECS Fargate, RDS PostgreSQL, ElastiCache Redis, Amazon MQ, ECR, CloudWatch Logs và Secrets Manager integration. Không có AWS resource nào được tạo trong repository task. Xem [AWS staging architecture](docs/architecture/aws-staging.md) và [deployment/rollback runbook](docs/deployment/staging-runbook.md).
+
+## Performance benchmark
+
+Locust baseline Task 26 trên cùng máy, 25 synthetic clients, 20 giây, chỉ đo `/health/live` và `/api/v1`:
+
+| Throughput | p50 | p95 | p99 | Error rate |
+|---:|---:|---:|---:|---:|
+| 168,72 req/s | 3 ms | 7 ms | 10 ms | 0% |
+
+Đây không phải production capacity và không đo PostgreSQL/auth/business workflow. Hardware, CSV gốc và giới hạn tại [task26-benchmark.md](docs/performance/task26-benchmark.md).
+
+## Troubleshooting
+
+| Hiện tượng | Kiểm tra |
+|---|---|
+| Backend không ready | `docker compose ... ps`, PostgreSQL health, `DATABASE_URL`, migration log |
+| PostgreSQL báo `password authentication failed` sau khi đổi `.env` | Volume có thể đã được khởi tạo bằng credential cũ. Khôi phục đúng credential hoặc backup rồi reset theo [database runbook](docs/database/local-development.md); không tự ý xóa volume |
+| Login luôn thất bại | JWT secret/issuer/audience, user active, rate-limit window; không log token |
+| Frontend báo backend unavailable | `API_BASE_URL`, backend readiness và BFF route `/api/backend/health` |
+| Job không chạy | RabbitMQ health, worker health, durable job status/dead-letter và correlation ID |
+| Cache lỗi | Redis health; API phải fallback PostgreSQL, đồng thời theo dõi DB load |
+| AI trả no-answer | Document status, tenant permission, chunks, threshold và citation evidence |
+| Metrics/traces trống | `/metrics`, scrape targets, `OTEL_EXPORTER_OTLP_ENDPOINT`, collector/Tempo health |
+
+Incident procedure đầy đủ tại [observability-runbook.md](docs/operations/observability-runbook.md).
+
+## Giới hạn đã biết
+
+- Chưa có public deployment, public demo URL hoặc screenshot xác minh.
+- AWS staging single-AZ và chưa provision; không phải production HA.
+- Alertmanager/on-call notification, WAF, autoscaling và disaster-recovery exercise còn **PLANNED**.
+- Redis integration đã từng bị skip khi service không có; cần chạy lại full suite trong môi trường CI/service đầy đủ.
+- Backend Python chưa có transitive lockfile đa nền tảng.
+- Payment/email chỉ là sandbox/test provider.
+- Account update và một số Payment history UI contract chưa có backend tương ứng.
+- AI quality/cost phụ thuộc provider/model; evaluation hiện dùng dataset giới hạn và deterministic doubles khi phù hợp.
+- Performance mới là HTTP baseline ngắn, chưa phải authenticated business load/soak test.
+
+## Roadmap
+
+Task 01–28 đã xây dựng application foundation; Task 29 hoàn thiện portfolio documentation. Task 30 **PLANNED** tập trung final audit, cleanup, reproducibility gaps, end-to-end demo verification và release readiness. Lộ trình chi tiết tại [30-tasks.md](docs/roadmap/30-tasks.md).
+
+## Tài liệu dành cho phỏng vấn
+
+- [Interview guide](docs/portfolio/interview-guide.md): cách giải thích hệ thống, câu hỏi và bằng chứng.
+- [Technical decisions](docs/portfolio/technical-decisions.md): quyết định, lựa chọn thay thế và trade-off.
+- [Demo script](docs/portfolio/demo-script.md): kịch bản demo synthetic, expected result và fallback.
+
+## Trạng thái
+
+**29/30 Task** sau khi tài liệu Task 29 được xác minh. Mọi claim trong README đều gắn với code, test hoặc tài liệu trong repository; capability chưa kiểm chứng được đánh dấu **PLANNED**, chưa deploy hoặc giới hạn đã biết.
