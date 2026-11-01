@@ -1,0 +1,60 @@
+groups:
+  - name: nexus-api
+    rules:
+      - alert: NexusApiHighErrorRate
+        expr: |
+          sum(rate(nexus_http_requests_total{route!="/health/live",status_code=~"5.."}[5m]))
+          / clamp_min(sum(rate(nexus_http_requests_total{route!="/health/live"}[5m])), 0.001) > 0.05
+        for: 10m
+        labels:
+          severity: page
+          owner: backend
+        annotations:
+          summary: API 5xx rate exceeds 5%
+          runbook: docs/operations/observability-runbook.md
+
+      - alert: NexusApiP95LatencyHigh
+        expr: |
+          histogram_quantile(0.95,
+            sum by (le) (rate(nexus_http_request_duration_seconds_bucket[5m]))) > 0.5
+        for: 10m
+        labels:
+          severity: ticket
+          owner: backend
+        annotations:
+          summary: API p95 latency exceeds 500 ms
+          runbook: docs/operations/observability-runbook.md
+
+      - alert: NexusDatabaseNotReady
+        expr: nexus_dependency_ready{dependency="database"} == 0
+        for: 2m
+        labels:
+          severity: page
+          owner: platform
+        annotations:
+          summary: PostgreSQL readiness check is failing
+          runbook: docs/operations/observability-runbook.md
+
+      - alert: NexusDatabaseP95LatencyHigh
+        expr: |
+          histogram_quantile(0.95,
+            sum by (le) (rate(nexus_db_operation_duration_seconds_bucket[5m]))) > 0.1
+        for: 10m
+        labels:
+          severity: ticket
+          owner: backend
+        annotations:
+          summary: Database operation p95 exceeds 100 ms
+          runbook: docs/operations/observability-runbook.md
+
+      - alert: NexusWorkerFailureRateHigh
+        expr: |
+          sum(rate(nexus_worker_tasks_total{status="failure"}[10m]))
+          / clamp_min(sum(rate(nexus_worker_tasks_total[10m])), 0.001) > 0.05
+        for: 10m
+        labels:
+          severity: page
+          owner: platform
+        annotations:
+          summary: Worker failure rate exceeds 5%
+          runbook: docs/operations/observability-runbook.md

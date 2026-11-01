@@ -5,20 +5,42 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+from opentelemetry.trace import Span
+from starlette.datastructures import Headers
+from starlette.types import Scope
 
 from nexus.bootstrap.config import Settings, get_settings
 from nexus.modules.auth.rate_limit import AuthenticationRateLimiter
 from nexus.modules.knowledge.providers import DeterministicAIProvider, OpenAIKnowledgeProvider
 from nexus.platform.api.errors import register_exception_handlers
 from nexus.platform.api.health import router as health_router
-from nexus.platform.api.middleware import RequestContextMiddleware
+from nexus.platform.api.middleware import RequestContextMiddleware, resolve_request_id
+from nexus.platform.api.request_context import REQUEST_ID_HEADER
 from nexus.platform.api.v1 import router as api_v1_router
 from nexus.platform.cache.service import CacheService, NullCacheService, RedisCacheService
 from nexus.platform.database.manager import DatabaseManager, DatabaseUnavailableError
 from nexus.platform.database.protocols import DatabaseManagerProtocol
 from nexus.platform.logging import configure_logging
+from nexus.platform.observability import configure_telemetry
+from nexus.platform.observability.router import router as metrics_router
 
 logger = logging.getLogger(__name__)
+
+
+def _trace_request(span: Span, scope: Scope) -> None:
+    """Correlate a safe request ID without capturing request headers or body."""
+    if not span.is_recording():
+        return
+    state = scope.setdefault("state", {})
+    existing = state.get("request_id")
+    request_id = (
+        existing
+        if isinstance(existing, str)
+        else resolve_request_id(Headers(scope=scope).get(REQUEST_ID_HEADER))
+    )
+    state["request_id"] = request_id
+    span.set_attribute("request.id", request_id)
 
 
 def create_app(
@@ -28,9 +50,12 @@ def create_app(
     """Create and configure an isolated FastAPI application instance."""
     resolved_settings = settings or get_settings()
     configure_logging(resolved_settings.log_level)
+    telemetry = configure_telemetry(resolved_settings)
     resolved_database_manager = database_manager or DatabaseManager(
         database_url=resolved_settings.database_url.get_secret_value(),
         connect_timeout_seconds=resolved_settings.database_connect_timeout_seconds,
+        metrics=telemetry.metrics,
+        tracer_provider=telemetry.tracer_provider,
     )
     cache_service: CacheService = (
         RedisCacheService(resolved_settings.redis_url.get_secret_value())
@@ -62,6 +87,7 @@ def create_app(
         finally:
             await cache_service.close()
             await resolved_database_manager.dispose()
+            telemetry.shutdown()
 
     application = FastAPI(
         title=resolved_settings.app_name,
@@ -73,6 +99,7 @@ def create_app(
         lifespan=lifespan,
     )
     application.state.settings = resolved_settings
+    application.state.telemetry = telemetry
     application.state.database_manager = resolved_database_manager
     application.state.auth_rate_limiter = AuthenticationRateLimiter(
         resolved_settings.auth_rate_limit_attempts,
@@ -81,8 +108,21 @@ def create_app(
     application.state.cache_service = cache_service
     application.state.knowledge_embedding_provider = knowledge_provider
     application.state.knowledge_answer_provider = knowledge_provider
-    application.add_middleware(RequestContextMiddleware)
     register_exception_handlers(application)
     application.include_router(health_router)
+    if resolved_settings.metrics_enabled:
+        application.include_router(metrics_router)
     application.include_router(api_v1_router, prefix=resolved_settings.api_v1_prefix)
+    route_templates = [*application.openapi()["paths"], "/metrics"]
+    application.add_middleware(
+        RequestContextMiddleware,
+        metrics=telemetry.metrics,
+        routes=route_templates,
+    )
+    FastAPIInstrumentor.instrument_app(
+        application,
+        tracer_provider=telemetry.tracer_provider,
+        excluded_urls="/health/live,/metrics",
+        server_request_hook=_trace_request,
+    )
     return application

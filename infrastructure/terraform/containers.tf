@@ -90,7 +90,7 @@ locals {
     }
   }
   backend_secrets = [
-    for key in ["DATABASE_URL", "JWT_SECRET_KEY", "PAYMENT_WEBHOOK_SECRET", "REDIS_URL", "CELERY_BROKER_URL", "CELERY_RESULT_BACKEND", "OPENAI_API_KEY"] : {
+    for key in ["DATABASE_URL", "JWT_SECRET_KEY", "PAYMENT_WEBHOOK_SECRET", "REDIS_URL", "CELERY_BROKER_URL", "CELERY_RESULT_BACKEND", "OPENAI_API_KEY", "OTEL_EXPORTER_OTLP_ENDPOINT"] : {
       name      = key
       valueFrom = "${var.application_secret_arn}:${key}::"
     }
@@ -112,7 +112,9 @@ resource "aws_ecs_task_definition" "backend" {
     portMappings = [{ containerPort = 8000, protocol = "tcp" }]
     environment = [
       { name = "NEXUS_ENVIRONMENT", value = "staging" },
-      { name = "NEXUS_LOG_LEVEL", value = "INFO" }
+      { name = "NEXUS_LOG_LEVEL", value = "INFO" },
+      { name = "NEXUS_OTEL_TRACE_SAMPLE_RATIO", value = "0.1" },
+      { name = "NEXUS_METRICS_ENABLED", value = "true" }
     ]
     secrets          = local.backend_secrets
     logConfiguration = local.log_configuration
@@ -161,7 +163,9 @@ resource "aws_ecs_task_definition" "worker" {
     command   = ["celery", "-A", "nexus.platform.background.celery_app:celery_app", "worker", "--loglevel=INFO", "--concurrency=2"]
     environment = [
       { name = "NEXUS_ENVIRONMENT", value = "staging" },
-      { name = "NEXUS_LOG_LEVEL", value = "INFO" }
+      { name = "NEXUS_LOG_LEVEL", value = "INFO" },
+      { name = "NEXUS_OTEL_TRACE_SAMPLE_RATIO", value = "0.1" },
+      { name = "NEXUS_WORKER_METRICS_PORT", value = "9100" }
     ]
     secrets = local.backend_secrets
     logConfiguration = merge(local.log_configuration, {

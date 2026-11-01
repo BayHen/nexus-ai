@@ -67,6 +67,12 @@ class Settings(BaseSettings):
     mcp_server_url: str = Field(default="http://127.0.0.1:8001/mcp", pattern=r"^https?://")
     mcp_host: str = "127.0.0.1"
     mcp_port: int = Field(default=8001, ge=1, le=65535)
+    otel_exporter_otlp_endpoint: str | None = Field(
+        default=None, validation_alias="OTEL_EXPORTER_OTLP_ENDPOINT"
+    )
+    otel_trace_sample_ratio: float = Field(default=0.1, ge=0, le=1)
+    metrics_enabled: bool = True
+    worker_metrics_port: int = Field(default=9100, ge=1024, le=65535)
 
     @model_validator(mode="after")
     def reject_default_auth_secret(self) -> "Settings":

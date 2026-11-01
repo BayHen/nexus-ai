@@ -6,6 +6,7 @@ from celery import Celery  # type: ignore[import-untyped]
 from kombu import Exchange, Queue  # type: ignore[import-untyped]
 
 from nexus.bootstrap.config import Settings
+from nexus.platform.observability import worker as worker_observability  # noqa: F401
 
 
 def create_celery_app(settings: Settings | None = None) -> Celery:

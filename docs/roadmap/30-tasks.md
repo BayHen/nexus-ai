@@ -121,9 +121,9 @@ Thiết lập workflow xác minh tổng hợp cho unit, API, PostgreSQL transact
 
 Bổ sung production container images, local Compose đầy đủ, CI quality/delivery gates, Trivy scanning, GitHub OIDC deployment workflow, Terraform cho AWS staging và runbook rollback. Việc provision/deploy AWS vẫn **BLOCKED** cho tới khi có phê duyệt chi phí và credentials phù hợp.
 
-### Task 28 – Terraform và AWS foundation — PLANNED
+### Task 28 – Observability & Reliability — HOÀN THÀNH NỀN TẢNG
 
-Thiết kế network, compute, database, cache, queue, storage, secrets, IAM và remote state theo least privilege.
+Bổ sung structured JSON logging có redaction, request/correlation/trace IDs, OpenTelemetry, Prometheus metrics cho API/SQLAlchemy/Celery, Grafana dashboard, Tempo traces, alert rules, SLO baseline và incident/recovery runbook. AWS private metrics collection và alert notification delivery vẫn **PLANNED**.
 
 ### Task 29 – Observability, performance và resilience — PLANNED
 

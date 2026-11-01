@@ -22,6 +22,10 @@ services:
       CELERY_BROKER_URL: amqp://${RABBITMQ_DEFAULT_USER:?RABBITMQ_DEFAULT_USER is required}:${RABBITMQ_DEFAULT_PASS:?RABBITMQ_DEFAULT_PASS is required}@rabbitmq:5672//
       CELERY_RESULT_BACKEND: redis://redis:6379/1
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+      NEXUS_OTEL_TRACE_SAMPLE_RATIO: ${NEXUS_OTEL_TRACE_SAMPLE_RATIO:-1.0}
+      NEXUS_METRICS_ENABLED: "true"
+      NEXUS_WORKER_METRICS_PORT: 9100
     ports:
       - "127.0.0.1:${APP_PORT:-8000}:8000"
     depends_on:
@@ -59,6 +63,7 @@ services:
         "worker",
         "--loglevel=INFO",
         "--concurrency=2",
+        "--pool=threads",
       ]
     environment: *backend-environment
     depends_on:
@@ -66,6 +71,21 @@ services:
         condition: service_healthy
     security_opt:
       - no-new-privileges:true
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "celery",
+          "-A",
+          "nexus.platform.background.celery_app:celery_app",
+          "inspect",
+          "ping",
+          "--timeout=5",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
 
   frontend:
     build:
@@ -161,8 +181,85 @@ services:
     security_opt:
       - no-new-privileges:true
 
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:v0.17.1
+    profiles: ["observability"]
+    restart: unless-stopped
+    environment:
+      DATA_SOURCE_NAME: postgresql://${POSTGRES_USER:?POSTGRES_USER is required}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@postgres:5432/${POSTGRES_DB:?POSTGRES_DB is required}?sslmode=disable
+    depends_on:
+      postgres:
+        condition: service_healthy
+    security_opt:
+      - no-new-privileges:true
+
+  prometheus:
+    image: prom/prometheus:v3.5.0
+    profiles: ["observability"]
+    restart: unless-stopped
+    command: ["--config.file=/etc/prometheus/prometheus.yml", "--storage.tsdb.retention.time=7d"]
+    volumes:
+      - ../observability/prometheus:/etc/prometheus:ro
+      - nexus_prometheus_data:/prometheus
+    ports:
+      - "127.0.0.1:${PROMETHEUS_PORT:-9090}:9090"
+    depends_on:
+      backend:
+        condition: service_healthy
+      worker:
+        condition: service_healthy
+    security_opt:
+      - no-new-privileges:true
+
+  tempo:
+    image: grafana/tempo:2.8.2
+    profiles: ["observability"]
+    restart: unless-stopped
+    command: ["-config.file=/etc/tempo.yml"]
+    volumes:
+      - ../observability/tempo/tempo.yml:/etc/tempo.yml:ro
+      - nexus_tempo_data:/var/tempo
+    security_opt:
+      - no-new-privileges:true
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.135.0
+    profiles: ["observability"]
+    restart: unless-stopped
+    command: ["--config=/etc/otel-collector.yml"]
+    volumes:
+      - ../observability/otel/collector.yml:/etc/otel-collector.yml:ro
+    depends_on:
+      - tempo
+    security_opt:
+      - no-new-privileges:true
+
+  grafana:
+    image: grafana/grafana:12.1.1
+    profiles: ["observability"]
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?GRAFANA_ADMIN_PASSWORD is required}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_AUTH_ANONYMOUS_ENABLED: "false"
+    volumes:
+      - ../observability/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ../observability/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - nexus_grafana_data:/var/lib/grafana
+    ports:
+      - "127.0.0.1:${GRAFANA_PORT:-3001}:3000"
+    depends_on:
+      - prometheus
+      - tempo
+    security_opt:
+      - no-new-privileges:true
+
 volumes:
   nexus_postgres_data:
     name: nexus_postgres_data
   nexus_rabbitmq_data:
     name: nexus_rabbitmq_data
+  nexus_prometheus_data:
+  nexus_tempo_data:
+  nexus_grafana_data:

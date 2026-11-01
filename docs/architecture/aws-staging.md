@@ -50,6 +50,7 @@ ECS execution role chỉ được `secretsmanager:GetSecretValue` trên một ap
 - `CELERY_BROKER_URL` dùng `amqps://`
 - `CELERY_RESULT_BACKEND`
 - `OPENAI_API_KEY` nếu bật AI provider
+- `OTEL_EXPORTER_OTLP_ENDPOINT` trỏ tới private OTLP collector; không trỏ thẳng tới endpoint public không được xác thực
 
 Terraform không tạo secret value. Giá trị `db_password` và `mq_password` vẫn đi vào encrypted Terraform state vì provider cần chúng để tạo managed service. Remote state phải dùng S3 encryption, versioning, public-access block và quyền truy cập tối thiểu. Không đưa `.tfvars` chứa secret vào Git.
 

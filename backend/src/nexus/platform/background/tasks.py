@@ -5,9 +5,12 @@ import logging
 from uuid import UUID
 
 from celery import Task  # type: ignore[import-untyped]
+from sqlalchemy import select
 
 from nexus.bootstrap.config import Settings
+from nexus.platform.api.request_context import reset_request_id, set_request_id
 from nexus.platform.background.celery_app import celery_app
+from nexus.platform.background.models import BackgroundJob
 from nexus.platform.background.service import JobExecutor
 from nexus.platform.database.manager import DatabaseManager
 
@@ -22,7 +25,15 @@ async def _execute_job(job_id: UUID) -> tuple[str, int, int, int]:
     )
     try:
         async with manager.transaction() as session:
-            job = await JobExecutor(session).execute(job_id)
+            durable_job = await session.scalar(
+                select(BackgroundJob).where(BackgroundJob.id == job_id)
+            )
+            correlation_id = durable_job.correlation_id if durable_job is not None else None
+            token = set_request_id(correlation_id or f"job-{job_id}")
+            try:
+                job = await JobExecutor(session).execute(job_id)
+            finally:
+                reset_request_id(token)
             return (
                 job.status,
                 job.attempt_count,

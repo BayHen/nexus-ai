@@ -30,6 +30,7 @@ def app() -> FastAPI:
         log_level="CRITICAL",
         database_url="postgresql+asyncpg://unused:unused@127.0.0.1:1/unused",
         jwt_secret_key="test-secret-key-that-is-at-least-32-characters",
+        otel_trace_sample_ratio=1.0,
     )
     return create_app(settings, database_manager=AvailableDatabaseManager())
 
