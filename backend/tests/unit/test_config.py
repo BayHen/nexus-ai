@@ -18,6 +18,17 @@ def test_settings_use_safe_defaults() -> None:
     assert settings.api_v1_prefix == "/api/v1"
 
 
+def test_blank_openai_api_key_is_treated_as_unconfigured() -> None:
+    settings = Settings(
+        database_url="postgresql+asyncpg://unused:unused@localhost/unused",
+        jwt_secret_key="test-secret-key-that-is-at-least-32-characters",
+        openai_api_key="   ",
+        _env_file=None,
+    )
+
+    assert settings.openai_api_key is None
+
+
 def test_settings_reject_invalid_api_prefix() -> None:
     with pytest.raises(ValidationError):
         Settings(

@@ -3,7 +3,7 @@
 from functools import lru_cache
 from typing import Literal
 
-from pydantic import Field, SecretStr, model_validator
+from pydantic import Field, SecretStr, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -73,6 +73,14 @@ class Settings(BaseSettings):
     otel_trace_sample_ratio: float = Field(default=0.1, ge=0, le=1)
     metrics_enabled: bool = True
     worker_metrics_port: int = Field(default=9100, ge=1024, le=65535)
+
+    @field_validator("openai_api_key", mode="before")
+    @classmethod
+    def normalize_blank_openai_api_key(cls, value: object) -> object:
+        """Treat a blank optional API key as an unconfigured provider."""
+        if isinstance(value, str) and not value.strip():
+            return None
+        return value
 
     @model_validator(mode="after")
     def reject_default_auth_secret(self) -> "Settings":

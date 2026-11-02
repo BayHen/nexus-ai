@@ -2,7 +2,7 @@
 
 NEXUS AI là dự án portfolio mô phỏng một nền tảng SaaS quản trị doanh nghiệp đa tenant. Dự án tập trung vào năng lực Backend Python và AI Backend: transaction an toàn, tenant isolation, RBAC, asynchronous processing, RAG/AI Agent có kiểm soát, kiểm thử theo rủi ro và khả năng vận hành.
 
-> Trạng thái: Task 01–28 đã hoàn thành ở mức repository; Task 29 hoàn thiện tài liệu portfolio. AWS staging đã có Terraform và workflow nhưng **chưa provision/deploy**. Repository không có public demo URL hoặc screenshot thực đã xác minh.
+> Trạng thái: Task 01–30 đã hoàn thành ở mức repository và audit. Kết luận release hiện tại là **CHƯA SẴN SÀNG cho v1.0.0** vì còn hai finding `HIGH` tại Next.js BFF: Docker CSRF origin mismatch và thiếu refresh-token flow. AWS staging đã có Terraform và workflow nhưng **chưa provision/deploy**. Repository không có public demo URL hoặc screenshot thực đã xác minh.
 
 ## Bài toán kinh doanh và giải pháp
 
@@ -247,11 +247,11 @@ Kết quả đã thực thi gần nhất:
 
 | Suite | Kết quả |
 |---|---|
-| Backend full PostgreSQL suite tại Task 26 | 113 pass, 3 Redis tests skip; coverage tổng 89% |
+| Backend full PostgreSQL suite tại Task 30 | 124 pass, 0 skip; coverage tổng 90% |
 | Backend deterministic regression tại Task 28 | 65 pass, 58 integration/performance deselected |
 | Database telemetry integration tại Task 28 | 2 pass |
-| Frontend Vitest tại Task 26 | 16 pass |
-| Playwright Chromium tại Task 26 | 2 pass |
+| Frontend Vitest tại Task 30 | 16 pass |
+| Playwright Chromium desktop/mobile tại Task 30 | 2 pass |
 | Observability/health focused suite | 12 pass |
 
 Chi tiết command và coverage gates tại [quality-verification.md](docs/testing/quality-verification.md). Các kết quả ở những thời điểm khác nhau không được cộng lại thành một tổng giả.
@@ -292,9 +292,11 @@ Incident procedure đầy đủ tại [observability-runbook.md](docs/operations
 ## Giới hạn đã biết
 
 - Chưa có public deployment, public demo URL hoặc screenshot xác minh.
+- Next.js BFF hiện trả 403 cho browser mutation có `Origin` hợp lệ trong Docker; login/register và business writes qua UI chưa release-ready.
+- Next.js BFF chưa dùng refresh cookie để tự rotate phiên; access token hết hạn sau 15 phút buộc người dùng đăng nhập lại. Đây là finding `HIGH` chặn `v1.0.0`.
 - AWS staging single-AZ và chưa provision; không phải production HA.
 - Alertmanager/on-call notification, WAF, autoscaling và disaster-recovery exercise còn **PLANNED**.
-- Redis integration đã từng bị skip khi service không có; cần chạy lại full suite trong môi trường CI/service đầy đủ.
+- Full suite Task 30 đã chạy với PostgreSQL và Redis local, không có test skip; kết quả này chưa thay thế CI evidence trên commit release.
 - Backend Python chưa có transitive lockfile đa nền tảng.
 - Payment/email chỉ là sandbox/test provider.
 - Account update và một số Payment history UI contract chưa có backend tương ứng.
@@ -303,7 +305,7 @@ Incident procedure đầy đủ tại [observability-runbook.md](docs/operations
 
 ## Roadmap
 
-Task 01–28 đã xây dựng application foundation; Task 29 hoàn thiện portfolio documentation. Task 30 **PLANNED** tập trung final audit, cleanup, reproducibility gaps, end-to-end demo verification và release readiness. Lộ trình chi tiết tại [30-tasks.md](docs/roadmap/30-tasks.md).
+Task 01–29 đã xây dựng application và portfolio documentation; Task 30 đã hoàn tất engineering audit. Release report tại [release-readiness.md](docs/release/release-readiness.md), known issues tại [known-issues.md](docs/release/known-issues.md) và gate bắt buộc tại [v1.0-checklist.md](docs/release/v1.0-checklist.md). Chưa đề xuất `v1.0.0` khi các blocker còn mở.
 
 ## Tài liệu dành cho phỏng vấn
 
@@ -313,4 +315,4 @@ Task 01–28 đã xây dựng application foundation; Task 29 hoàn thiện port
 
 ## Trạng thái
 
-**29/30 Task** sau khi tài liệu Task 29 được xác minh. Mọi claim trong README đều gắn với code, test hoặc tài liệu trong repository; capability chưa kiểm chứng được đánh dấu **PLANNED**, chưa deploy hoặc giới hạn đã biết.
+**30/30 Task** ở mức roadmap repository. Trạng thái hoàn thành roadmap không đồng nghĩa release-ready: Task 30 kết luận **CHƯA SẴN SÀNG cho v1.0.0**. Mọi claim trong README đều gắn với code, test hoặc tài liệu; capability chưa kiểm chứng được đánh dấu **PLANNED**, chưa deploy hoặc giới hạn đã biết.

@@ -1,5 +1,5 @@
-"""Application composition root."""
+"""Application composition root package.
 
-from nexus.bootstrap.application import create_app
-
-__all__ = ["create_app"]
+Import concrete entry points from their modules so worker configuration can load
+without importing the FastAPI application and its route graph.
+"""

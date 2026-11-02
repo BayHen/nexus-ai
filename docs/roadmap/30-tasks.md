@@ -129,9 +129,9 @@ Bổ sung structured JSON logging có redaction, request/correlation/trace IDs, 
 
 Chuẩn hóa README portfolio từ bằng chứng repository; bổ sung interview guide, technical decision record và demo script dùng synthetic data. Không thêm screenshot, public URL, deployment hoặc metric chưa được xác minh.
 
-### Task 30 – Final hardening và portfolio release — PLANNED
+### Task 30 – Final Engineering Audit & Release — HOÀN THÀNH AUDIT, CHƯA RELEASE-READY
 
-Hoàn tất security review, tenant isolation review, runbook, demo data, architecture diagrams, release checklist và portfolio narrative.
+Đã chạy quality gates, audit security/tenant/data consistency/AI/MCP/frontend/CI/observability, và tạo release readiness, known issues cùng v1.0 checklist. Còn hai finding `HIGH` tại BFF về Docker CSRF origin validation và web refresh-token flow nên chưa đề xuất `v1.0.0`; không tạo tag, push hoặc deploy.
 
 ## Mốc phát hành
 

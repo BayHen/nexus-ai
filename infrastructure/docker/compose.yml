@@ -94,6 +94,7 @@ services:
     restart: unless-stopped
     environment:
       API_BASE_URL: http://backend:8000
+      NEXUS_ALLOWED_BROWSER_ORIGINS: "http://localhost:3000,http://127.0.0.1:3000"
     ports:
       - "127.0.0.1:${FRONTEND_PORT:-3000}:3000"
     depends_on:
@@ -257,9 +258,9 @@ services:
 
 volumes:
   nexus_postgres_data:
-    name: nexus_postgres_data
+    name: ${POSTGRES_VOLUME_NAME:-nexus_postgres_data}
   nexus_rabbitmq_data:
-    name: nexus_rabbitmq_data
+    name: ${RABBITMQ_VOLUME_NAME:-nexus_rabbitmq_data}
   nexus_prometheus_data:
   nexus_tempo_data:
   nexus_grafana_data:
